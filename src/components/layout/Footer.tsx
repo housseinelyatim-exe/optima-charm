@@ -14,8 +14,76 @@ export function Footer() {
 
   return (
     <footer className="bg-primary text-primary-foreground">
-      <div className="container py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="container py-8 md:py-16">
+        {/* Mobile: Compact layout */}
+        <div className="md:hidden space-y-6">
+          {/* Logo + Social row */}
+          <div className="flex items-center justify-between">
+            <img
+              src={optimaLogo}
+              alt="Optima Optique"
+              className="h-10 w-auto brightness-0 invert"
+            />
+            <div className="flex gap-3">
+              <a
+                href={facebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-9 w-9 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors"
+              >
+                <Facebook className="h-4 w-4" />
+              </a>
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-9 w-9 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors"
+              >
+                <Instagram className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+
+          {/* Quick contact row */}
+          <div className="flex flex-wrap gap-4 text-sm">
+            <a
+              href={`tel:${phone.replace(/\s/g, "")}`}
+              className="flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+            >
+              <Phone className="h-4 w-4" />
+              <span>{phone}</span>
+            </a>
+            <a
+              href={`mailto:${email}`}
+              className="flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+            >
+              <Mail className="h-4 w-4" />
+              <span>{email}</span>
+            </a>
+          </div>
+
+          {/* Navigation links - horizontal */}
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+            <Link to="/" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+              Accueil
+            </Link>
+            <Link to="/boutique" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+              Boutique
+            </Link>
+            <Link to="/contact" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+              Contact
+            </Link>
+          </div>
+
+          {/* Address */}
+          <div className="flex items-start gap-2 text-sm text-primary-foreground/60">
+            <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span>{address}</span>
+          </div>
+        </div>
+
+        {/* Desktop: Full layout */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
             <img
@@ -129,7 +197,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-primary-foreground/10 mt-8 pt-8 text-center text-sm text-primary-foreground/60">
+        <div className="border-t border-primary-foreground/10 mt-6 md:mt-8 pt-6 md:pt-8 text-center text-xs md:text-sm text-primary-foreground/60">
           <p>
             © {new Date().getFullYear()} Optima Optique by Emina Bettaher. Tous
             droits réservés.
