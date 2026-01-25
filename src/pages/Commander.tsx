@@ -143,52 +143,38 @@ const Commander = () => {
     setIsSubmitting(true);
 
     try {
-      // Create order with coupon info
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert([{
-          customer_name: data.customer_name,
-          customer_phone: data.customer_phone,
-          customer_address: data.delivery_method === "delivery" ? data.customer_address : null,
-          delivery_method: data.delivery_method,
-          notes: data.notes || null,
-          total: finalTotal,
-          coupon_code: appliedCoupon?.code || null,
-          discount_amount: discountAmount,
-        }] as any)
-        .select()
-        .single();
+      // Create order using RPC function (bypasses RLS for guest checkout)
+      const { data: orderResult, error: orderError } = await supabase
+        .rpc('create_order', {
+          p_customer_name: data.customer_name,
+          p_customer_phone: data.customer_phone,
+          p_customer_address: data.delivery_method === "delivery" ? data.customer_address : null,
+          p_delivery_method: data.delivery_method,
+          p_notes: data.notes || null,
+          p_total: finalTotal,
+          p_coupon_code: appliedCoupon?.code || null,
+          p_discount_amount: discountAmount,
+        });
 
       if (orderError) throw orderError;
+      
+      const order = orderResult?.[0];
+      if (!order) throw new Error("Failed to create order");
 
-      // Create order items - set product_id to null if product might not exist
-      const orderItems = items.map((item) => ({
-        order_id: order.id,
-        product_id: item.id || null,
-        product_name: item.name,
-        quantity: item.quantity,
-        price_at_purchase: item.price,
-      }));
-
-      // Insert order items one by one to handle potential FK constraint issues
-      for (const orderItem of orderItems) {
+      // Create order items using RPC function
+      for (const item of items) {
         const { error: itemError } = await supabase
-          .from("order_items")
-          .insert([{
-            ...orderItem,
-            // If FK fails, try again with null product_id
-          }]);
+          .rpc('create_order_item', {
+            p_order_id: order.id,
+            p_product_id: item.id || null,
+            p_product_name: item.name,
+            p_quantity: item.quantity,
+            p_price_at_purchase: item.price,
+          });
         
-        if (itemError?.code === "23503") {
-          // Foreign key violation - product doesn't exist, insert with null product_id
-          await supabase
-            .from("order_items")
-            .insert([{
-              ...orderItem,
-              product_id: null,
-            }]);
-        } else if (itemError) {
-          throw itemError;
+        if (itemError) {
+          console.error("Order item error:", itemError);
+          // Continue with other items even if one fails
         }
       }
 

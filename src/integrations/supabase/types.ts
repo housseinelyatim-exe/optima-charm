@@ -396,6 +396,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_order: {
+        Args: {
+          p_coupon_code?: string
+          p_customer_address?: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_delivery_method?: string
+          p_discount_amount?: number
+          p_notes?: string
+          p_total?: number
+        }
+        Returns: {
+          id: string
+          order_number: string
+        }[]
+      }
+      create_order_item: {
+        Args: {
+          p_order_id: string
+          p_price_at_purchase?: number
+          p_product_id?: string
+          p_product_name?: string
+          p_quantity?: number
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
