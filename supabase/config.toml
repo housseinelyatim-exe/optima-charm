@@ -1,1 +1,7 @@
 project_id = "avmcintfmjihxxyosecz"
+
+[functions.cloudinary-upload]
+verify_jwt = false
+
+[functions.instagram-fetch]
+verify_jwt = false
