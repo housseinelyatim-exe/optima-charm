@@ -9,7 +9,6 @@ import {
   LogOut,
   Menu,
   ChevronLeft,
-  Instagram,
   Images,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,6 @@ const navItems = [
   { name: "Commandes", href: "/admin/commandes", icon: ShoppingCart },
   { name: "Statistiques", href: "/admin/statistiques", icon: BarChart3 },
   { name: "Catégories", href: "/admin/categories", icon: Images },
-  { name: "Instagram", href: "/admin/instagram", icon: Instagram },
   { name: "Paramètres", href: "/admin/parametres", icon: Settings },
 ];
 
