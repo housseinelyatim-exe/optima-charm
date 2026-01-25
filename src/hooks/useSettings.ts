@@ -12,6 +12,8 @@ export interface Settings {
   instagram_url: string;
   work_hours_weekdays: string;
   work_hours_weekend: string;
+  announcement_enabled: string;
+  announcement_text: string;
 }
 
 export function useSettings() {

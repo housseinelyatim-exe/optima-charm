@@ -66,7 +66,7 @@ const Commander = () => {
       customer_name: "",
       customer_phone: "",
       customer_address: "",
-      delivery_method: "pickup",
+      delivery_method: "delivery",
       notes: "",
     },
   });

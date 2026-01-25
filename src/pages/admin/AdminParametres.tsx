@@ -3,11 +3,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Save, Upload, X } from "lucide-react";
+import { Loader2, Save, Upload, X, Megaphone } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
@@ -31,6 +32,8 @@ const settingsSchema = z.object({
   instagram_url: z.string().url().max(200).or(z.literal("")),
   work_hours_weekdays: z.string().max(100),
   work_hours_weekend: z.string().max(100),
+  announcement_enabled: z.string(),
+  announcement_text: z.string().max(200),
 });
 
 type SettingsForm = z.infer<typeof settingsSchema>;
@@ -81,6 +84,8 @@ const AdminParametres = () => {
       instagram_url: "",
       work_hours_weekdays: "",
       work_hours_weekend: "",
+      announcement_enabled: "false",
+      announcement_text: "",
     },
   });
 
@@ -111,6 +116,8 @@ const AdminParametres = () => {
         instagram_url: settings.instagram_url || "",
         work_hours_weekdays: settings.work_hours_weekdays || "",
         work_hours_weekend: settings.work_hours_weekend || "",
+        announcement_enabled: settings.announcement_enabled || "false",
+        announcement_text: settings.announcement_text || "",
       });
     }
   }, [settings, form]);
@@ -166,6 +173,50 @@ const AdminParametres = () => {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Announcement Bar */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Megaphone className="h-5 w-5" />
+                  Barre d'annonce
+                </CardTitle>
+                <CardDescription>
+                  Affichez un message promotionnel en haut du site
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="announcement_enabled"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between">
+                      <FormLabel>Afficher la barre d'annonce</FormLabel>
+                      <FormControl>
+                        <Switch
+                          checked={field.value === "true"}
+                          onCheckedChange={(checked) => field.onChange(checked ? "true" : "false")}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="announcement_text"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Texte de l'annonce</FormLabel>
+                      <FormControl>
+                        <Input placeholder="🚚 Livraison gratuite à partir de 100 TND !" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
             {/* Homepage settings */}
             <Card>
               <CardHeader>
