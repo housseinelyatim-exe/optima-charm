@@ -10,6 +10,7 @@ import {
   Menu,
   ChevronLeft,
   Images,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -27,6 +28,7 @@ const navItems = [
   { name: "Commandes", href: "/admin/commandes", icon: ShoppingCart },
   { name: "Statistiques", href: "/admin/statistiques", icon: BarChart3 },
   { name: "Catégories", href: "/admin/categories", icon: Images },
+  { name: "Codes Promo", href: "/admin/coupons", icon: Tag },
   { name: "Paramètres", href: "/admin/parametres", icon: Settings },
 ];
 
