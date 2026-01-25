@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Truck, Store, ArrowLeft, Loader2 } from "lucide-react";
+import { Truck, Store, ArrowLeft, Loader2, Tag, X } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,13 @@ import {
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+interface AppliedCoupon {
+  code: string;
+  discount_type: string;
+  discount_value: number;
+  discount_amount: number;
+}
 
 const checkoutSchema = z.object({
   customer_name: z
@@ -41,9 +48,17 @@ type CheckoutForm = z.infer<typeof checkoutSchema>;
 
 const Commander = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { items, total, clearCart } = useCart();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Get coupon from location state (passed from Panier)
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(
+    location.state?.coupon || null
+  );
+  const [couponCode, setCouponCode] = useState("");
+  const [isValidating, setIsValidating] = useState(false);
 
   const form = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema),
@@ -58,6 +73,58 @@ const Commander = () => {
 
   const deliveryMethod = form.watch("delivery_method");
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+
+    setIsValidating(true);
+    try {
+      const { data, error } = await supabase.rpc("validate_coupon", {
+        coupon_code: couponCode.trim(),
+        order_total: total,
+      });
+
+      if (error) throw error;
+
+      const result = data?.[0];
+      if (result?.valid) {
+        setAppliedCoupon({
+          code: couponCode.toUpperCase(),
+          discount_type: result.discount_type,
+          discount_value: result.discount_value,
+          discount_amount: result.discount_amount,
+        });
+        toast({
+          title: "Code promo appliqué !",
+          description: `Réduction de ${result.discount_amount.toFixed(2)} TND`,
+        });
+        setCouponCode("");
+      } else {
+        toast({
+          title: "Code invalide",
+          description: result?.message || "Ce code promo n'est pas valide",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Coupon validation error:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de valider le code promo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    toast({ title: "Code promo retiré" });
+  };
+
+  const discountAmount = appliedCoupon?.discount_amount || 0;
+  const finalTotal = Math.max(0, total - discountAmount);
+
   const onSubmit = async (data: CheckoutForm) => {
     if (items.length === 0) {
       toast({
@@ -71,7 +138,7 @@ const Commander = () => {
     setIsSubmitting(true);
 
     try {
-      // Create order
+      // Create order with coupon info
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert([{
@@ -80,7 +147,9 @@ const Commander = () => {
           customer_address: data.delivery_method === "delivery" ? data.customer_address : null,
           delivery_method: data.delivery_method,
           notes: data.notes || null,
-          total: total,
+          total: finalTotal,
+          coupon_code: appliedCoupon?.code || null,
+          discount_amount: discountAmount,
         }] as any)
         .select()
         .single();
@@ -101,6 +170,13 @@ const Commander = () => {
         .insert(orderItems);
 
       if (itemsError) throw itemsError;
+
+      // Increment coupon usage if applied
+      if (appliedCoupon) {
+        await supabase.rpc("increment_coupon_usage", {
+          coupon_code: appliedCoupon.code,
+        });
+      }
 
       // Clear cart and redirect
       clearCart();
@@ -309,7 +385,7 @@ const Commander = () => {
             <Card className="sticky top-24">
               <CardContent className="p-6 space-y-4">
                 <h2 className="font-semibold text-lg">Votre Commande</h2>
-                <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                <div className="space-y-3 max-h-[200px] overflow-y-auto">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-3 text-sm">
                       <div className="w-12 h-12 rounded bg-secondary flex-shrink-0">
@@ -328,11 +404,69 @@ const Commander = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* Coupon section */}
+                <div className="border-t pt-4 space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    Code promo
+                  </label>
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                      <div>
+                        <span className="font-mono font-bold text-sm text-green-700 dark:text-green-400">
+                          {appliedCoupon.code}
+                        </span>
+                        <p className="text-xs text-green-600 dark:text-green-500">
+                          -{appliedCoupon.discount_amount.toFixed(2)} TND
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-green-700 hover:text-red-600"
+                        onClick={removeCoupon}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleApplyCoupon())}
+                        className="font-mono text-sm"
+                      />
+                      <Button 
+                        type="button"
+                        variant="outline" 
+                        size="sm"
+                        onClick={handleApplyCoupon}
+                        disabled={isValidating || !couponCode.trim()}
+                      >
+                        {isValidating ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "OK"
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Sous-total</span>
                     <span>{total.toFixed(2)} TND</span>
                   </div>
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Réduction</span>
+                      <span>-{discountAmount.toFixed(2)} TND</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Livraison</span>
                     <span>
@@ -341,7 +475,7 @@ const Commander = () => {
                   </div>
                   <div className="flex justify-between font-semibold text-lg pt-2 border-t">
                     <span>Total</span>
-                    <span>{total.toFixed(2)} TND</span>
+                    <span>{finalTotal.toFixed(2)} TND</span>
                   </div>
                 </div>
               </CardContent>

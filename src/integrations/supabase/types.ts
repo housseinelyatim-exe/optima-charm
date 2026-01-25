@@ -85,6 +85,54 @@ export type Database = {
           },
         ]
       }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          min_order_amount: number | null
+          updated_at: string
+          used_count: number | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          updated_at?: string
+          used_count?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          updated_at?: string
+          used_count?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       homepage_categories: {
         Row: {
           created_at: string
@@ -192,11 +240,13 @@ export type Database = {
       }
       orders: {
         Row: {
+          coupon_code: string | null
           created_at: string
           customer_address: string | null
           customer_name: string
           customer_phone: string
           delivery_method: string
+          discount_amount: number | null
           id: string
           notes: string | null
           order_number: string
@@ -205,11 +255,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          coupon_code?: string | null
           created_at?: string
           customer_address?: string | null
           customer_name: string
           customer_phone: string
           delivery_method: string
+          discount_amount?: number | null
           id?: string
           notes?: string | null
           order_number: string
@@ -218,11 +270,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          coupon_code?: string | null
           created_at?: string
           customer_address?: string | null
           customer_name?: string
           customer_phone?: string
           delivery_method?: string
+          discount_amount?: number | null
           id?: string
           notes?: string | null
           order_number?: string
@@ -349,7 +403,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_coupon_usage: {
+        Args: { coupon_code: string }
+        Returns: undefined
+      }
       setup_first_admin: { Args: never; Returns: boolean }
+      validate_coupon: {
+        Args: { coupon_code: string; order_total: number }
+        Returns: {
+          discount_amount: number
+          discount_type: string
+          discount_value: number
+          message: string
+          valid: boolean
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"
