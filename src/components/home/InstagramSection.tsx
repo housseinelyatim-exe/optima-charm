@@ -1,44 +1,40 @@
 import { Instagram } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useSettings } from "@/hooks/useSettings";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Placeholder Instagram posts - these would ideally come from an API
-const instagramPosts = [
-  {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=400&fit=crop",
-    alt: "Lunettes de soleil tendance",
-  },
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=400&fit=crop",
-    alt: "Collection été",
-  },
-  {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=400&h=400&fit=crop",
-    alt: "Lunettes optiques",
-  },
-  {
-    id: 4,
-    image: "https://images.unsplash.com/photo-1509695507497-903c140c43b0?w=400&h=400&fit=crop",
-    alt: "Style urbain",
-  },
-  {
-    id: 5,
-    image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=400&h=400&fit=crop",
-    alt: "Accessoires mode",
-  },
-  {
-    id: 6,
-    image: "https://images.unsplash.com/photo-1577803645773-f96470509666?w=400&h=400&fit=crop",
-    alt: "Nouveautés boutique",
-  },
-];
+interface InstagramPost {
+  id: string;
+  image_url: string;
+  alt_text: string;
+  display_order: number;
+}
 
 export function InstagramSection() {
   const { data: settings } = useSettings();
   const instagramUrl = settings?.instagram_url || "https://instagram.com";
+
+  const { data: posts, isLoading } = useQuery({
+    queryKey: ["instagram-posts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("instagram_posts")
+        .select("id, image_url, alt_text, display_order")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true })
+        .limit(6);
+
+      if (error) throw error;
+      return data as InstagramPost[];
+    },
+  });
+
+  // Don't render section if no posts
+  if (!isLoading && (!posts || posts.length === 0)) {
+    return null;
+  }
 
   return (
     <section className="py-16 md:py-24 bg-secondary/30">
@@ -59,28 +55,32 @@ export function InstagramSection() {
 
         {/* Instagram Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-8">
-          {instagramPosts.map((post, index) => (
-            <a
-              key={post.id}
-              href={instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative aspect-square overflow-hidden rounded-xl animate-fade-in"
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <img
-                src={post.image}
-                alt={post.alt}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                <Instagram className="h-6 w-6 text-white" />
-              </div>
-              {/* Gradient Border Effect */}
-              <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-white/30 transition-colors duration-300" />
-            </a>
-          ))}
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, index) => (
+                <Skeleton key={index} className="aspect-square rounded-xl" />
+              ))
+            : posts?.map((post, index) => (
+                <a
+                  key={post.id}
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative aspect-square overflow-hidden rounded-xl animate-fade-in"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <img
+                    src={post.image_url}
+                    alt={post.alt_text}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                    <Instagram className="h-6 w-6 text-white" />
+                  </div>
+                  {/* Gradient Border Effect */}
+                  <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-white/30 transition-colors duration-300" />
+                </a>
+              ))}
         </div>
 
         {/* CTA Button */}

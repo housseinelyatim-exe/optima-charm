@@ -85,6 +85,33 @@ export type Database = {
           },
         ]
       }
+      instagram_posts: {
+        Row: {
+          alt_text: string
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string
+          is_active: boolean | null
+        }
+        Insert: {
+          alt_text?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+        }
+        Update: {
+          alt_text?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
