@@ -28,6 +28,8 @@ export interface Category {
   description: string | null;
   image_url: string | null;
   display_order: number;
+  parent_id: string | null;
+  subcategories?: Category[];
 }
 
 export function useProducts(categorySlug?: string) {
@@ -127,6 +129,29 @@ export function useLatestProducts(limit = 8) {
 export function useCategories() {
   return useQuery({
     queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .order("display_order", { ascending: true });
+
+      if (error) throw error;
+      
+      // Organize into hierarchy
+      const allCategories = data as Category[];
+      const mainCategories = allCategories.filter(c => !c.parent_id);
+      
+      return mainCategories.map(main => ({
+        ...main,
+        subcategories: allCategories.filter(sub => sub.parent_id === main.id)
+      }));
+    },
+  });
+}
+
+export function useAllCategories() {
+  return useQuery({
+    queryKey: ["all-categories"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
