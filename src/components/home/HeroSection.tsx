@@ -6,9 +6,19 @@ import { useSettings } from "@/hooks/useSettings";
 export function HeroSection() {
   const { data: settings } = useSettings();
 
+  const heroBackground = settings?.hero_background_image;
+
   return (
     <section className="relative min-h-[70vh] flex items-center bg-gradient-to-br from-secondary via-background to-secondary">
-      <div className="absolute inset-0 bg-[url('/placeholder.svg')] bg-cover bg-center opacity-5" />
+      {heroBackground ? (
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${heroBackground})` }}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-[url('/placeholder.svg')] bg-cover bg-center opacity-5" />
+      )}
+      <div className="absolute inset-0 bg-background/60" />
       <div className="container relative py-20 md:py-32">
         <div className="max-w-2xl space-y-6 animate-fade-in">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight text-foreground">

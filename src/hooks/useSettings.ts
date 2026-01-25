@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface Settings {
   hero_tagline: string;
   hero_subtitle: string;
+  hero_background_image: string;
   shop_phone: string;
   shop_email: string;
   shop_address: string;
