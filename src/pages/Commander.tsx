@@ -161,20 +161,36 @@ const Commander = () => {
 
       if (orderError) throw orderError;
 
-      // Create order items
+      // Create order items - set product_id to null if product might not exist
       const orderItems = items.map((item) => ({
         order_id: order.id,
-        product_id: item.id,
+        product_id: item.id || null,
         product_name: item.name,
         quantity: item.quantity,
         price_at_purchase: item.price,
       }));
 
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
+      // Insert order items one by one to handle potential FK constraint issues
+      for (const orderItem of orderItems) {
+        const { error: itemError } = await supabase
+          .from("order_items")
+          .insert([{
+            ...orderItem,
+            // If FK fails, try again with null product_id
+          }]);
+        
+        if (itemError?.code === "23503") {
+          // Foreign key violation - product doesn't exist, insert with null product_id
+          await supabase
+            .from("order_items")
+            .insert([{
+              ...orderItem,
+              product_id: null,
+            }]);
+        } else if (itemError) {
+          throw itemError;
+        }
+      }
 
       // Increment coupon usage if applied
       if (appliedCoupon) {
