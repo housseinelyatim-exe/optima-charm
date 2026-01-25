@@ -1,8 +1,17 @@
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, Phone, Mail, MapPin } from "lucide-react";
 import optimaLogo from "@/assets/optima-logo.png";
+import { useSettings } from "@/hooks/useSettings";
 
 export function Footer() {
+  const { data: settings } = useSettings();
+
+  const phone = settings?.shop_phone || "+216 XX XXX XXX";
+  const email = settings?.shop_email || "contact@optima-optique.tn";
+  const address = settings?.shop_address || "Le Krib, Siliana, Tunisie";
+  const facebookUrl = settings?.facebook_url || "https://facebook.com/optimaoptique";
+  const instagramUrl = settings?.instagram_url || "https://instagram.com/optima_optique_krib";
+
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container py-12 md:py-16">
@@ -73,26 +82,24 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span className="text-primary-foreground/80">
-                  Le Krib, Siliana, Tunisie
-                </span>
+                <span className="text-primary-foreground/80">{address}</span>
               </li>
               <li>
                 <a
-                  href="tel:+21600000000"
+                  href={`tel:${phone.replace(/\s/g, "")}`}
                   className="flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
                   <Phone className="h-4 w-4" />
-                  <span>+216 XX XXX XXX</span>
+                  <span>{phone}</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:contact@optima-optique.tn"
+                  href={`mailto:${email}`}
                   className="flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
                   <Mail className="h-4 w-4" />
-                  <span>contact@optima-optique.tn</span>
+                  <span>{email}</span>
                 </a>
               </li>
             </ul>
@@ -103,7 +110,7 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Suivez-nous</h3>
             <div className="flex gap-4">
               <a
-                href="https://facebook.com/optimaoptique"
+                href={facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors"
@@ -111,7 +118,7 @@ export function Footer() {
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="https://instagram.com/optima_optique_krib"
+                href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors"
