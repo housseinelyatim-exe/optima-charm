@@ -121,15 +121,30 @@ const Contact = () => {
             </div>
           </div>
 
-          {/* Map placeholder */}
+          {/* Google Maps */}
           <div className="mt-12">
-            <div className="aspect-video bg-secondary rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Le Krib, Siliana, Tunisie
-                </p>
-              </div>
+            <div className="aspect-video rounded-lg overflow-hidden border">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3194.8876969850396!2d9.052694!3d36.326841!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12fd9b33e4b7e65f%3A0x5c7f9e0a2b8b9c8d!2sLe%20Krib%2C%20Tunisia!5e0!3m2!1sen!2s!4v1700000000000!5m2!1sen!2s"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Optima Optique - Le Krib, Siliana"
+              />
+            </div>
+            <div className="mt-4 text-center">
+              <a
+                href="https://maps.app.goo.gl/8S2MnZaMM7KudFceA"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-primary hover:underline"
+              >
+                <MapPin className="h-4 w-4" />
+                Ouvrir dans Google Maps
+              </a>
             </div>
           </div>
         </div>
