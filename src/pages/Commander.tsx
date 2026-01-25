@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
+import { useSettings } from "@/hooks/useSettings";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AppliedCoupon {
@@ -51,6 +52,7 @@ const Commander = () => {
   const location = useLocation();
   const { items, total, clearCart } = useCart();
   const { toast } = useToast();
+  const { data: settings } = useSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Get coupon from location state (passed from Panier)
@@ -59,6 +61,8 @@ const Commander = () => {
   );
   const [couponCode, setCouponCode] = useState("");
   const [isValidating, setIsValidating] = useState(false);
+
+  const deliveryPrice = parseFloat(settings?.delivery_price || "7") || 7;
 
   const form = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema),
@@ -123,7 +127,8 @@ const Commander = () => {
   };
 
   const discountAmount = appliedCoupon?.discount_amount || 0;
-  const finalTotal = Math.max(0, total - discountAmount);
+  const shippingCost = deliveryMethod === "delivery" ? deliveryPrice : 0;
+  const finalTotal = Math.max(0, total - discountAmount + shippingCost);
 
   const onSubmit = async (data: CheckoutForm) => {
     if (items.length === 0) {
@@ -470,7 +475,7 @@ const Commander = () => {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Livraison</span>
                     <span>
-                      {deliveryMethod === "pickup" ? "Gratuit" : "À calculer"}
+                      {deliveryMethod === "pickup" ? "Gratuit" : `${deliveryPrice.toFixed(2)} TND`}
                     </span>
                   </div>
                   <div className="flex justify-between font-semibold text-lg pt-2 border-t">

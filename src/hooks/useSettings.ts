@@ -14,6 +14,7 @@ export interface Settings {
   work_hours_weekend: string;
   announcement_enabled: string;
   announcement_text: string;
+  delivery_price: string;
 }
 
 export function useSettings() {
