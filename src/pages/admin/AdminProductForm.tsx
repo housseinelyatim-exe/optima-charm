@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Plus } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -53,6 +60,10 @@ const AdminProductForm = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  
+  // New brand dialog state
+  const [isNewBrandOpen, setIsNewBrandOpen] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
 
   const form = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
@@ -107,6 +118,51 @@ const AdminProductForm = () => {
       return data;
     },
   });
+
+  // Add new brand mutation
+  const addBrandMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const slug = name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      
+      const { data, error } = await supabase
+        .from("brands")
+        .insert([{ name, slug }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (newBrand) => {
+      queryClient.invalidateQueries({ queryKey: ["brands"] });
+      form.setValue("brand_id", newBrand.id);
+      setNewBrandName("");
+      setIsNewBrandOpen(false);
+      toast({
+        title: "Marque créée",
+        description: `La marque "${newBrand.name}" a été ajoutée`,
+      });
+    },
+    onError: (error) => {
+      console.error("Error creating brand:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer la marque",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddBrand = () => {
+    if (newBrandName.trim()) {
+      addBrandMutation.mutate(newBrandName.trim());
+    }
+  };
 
   // Fetch product if editing
   const { data: product, isLoading: isLoadingProduct } = useQuery({
@@ -393,23 +449,72 @@ const AdminProductForm = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Marque</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || ""}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Sélectionner une marque" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {brands?.map((brand) => (
-                                <SelectItem key={brand.id} value={brand.id}>
-                                  {brand.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <div className="flex gap-2">
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value || ""}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="flex-1">
+                                  <SelectValue placeholder="Sélectionner une marque" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {brands?.map((brand) => (
+                                  <SelectItem key={brand.id} value={brand.id}>
+                                    {brand.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Dialog open={isNewBrandOpen} onOpenChange={setIsNewBrandOpen}>
+                              <DialogTrigger asChild>
+                                <Button type="button" variant="outline" size="icon">
+                                  <Plus className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Ajouter une nouvelle marque</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4 pt-4">
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Nom de la marque</label>
+                                    <Input
+                                      placeholder="Ex: Ray-Ban, Oakley..."
+                                      value={newBrandName}
+                                      onChange={(e) => setNewBrandName(e.target.value)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                          e.preventDefault();
+                                          handleAddBrand();
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() => setIsNewBrandOpen(false)}
+                                    >
+                                      Annuler
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      onClick={handleAddBrand}
+                                      disabled={!newBrandName.trim() || addBrandMutation.isPending}
+                                    >
+                                      {addBrandMutation.isPending ? (
+                                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                      ) : null}
+                                      Ajouter
+                                    </Button>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
