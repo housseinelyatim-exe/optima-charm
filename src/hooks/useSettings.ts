@@ -10,6 +10,8 @@ export interface Settings {
   shop_address: string;
   facebook_url: string;
   instagram_url: string;
+  work_hours_weekdays: string;
+  work_hours_weekend: string;
 }
 
 export function useSettings() {

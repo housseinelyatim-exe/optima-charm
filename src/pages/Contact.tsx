@@ -86,9 +86,11 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold mb-1">Horaires d'ouverture</h3>
                   <p className="text-muted-foreground">
-                    Lundi - Samedi: 9h00 - 19h00
+                    {settings?.work_hours_weekdays || "Lundi - Samedi: 9h00 - 19h00"}
                   </p>
-                  <p className="text-muted-foreground">Dimanche: Fermé</p>
+                  <p className="text-muted-foreground">
+                    {settings?.work_hours_weekend || "Dimanche: Fermé"}
+                  </p>
                 </div>
               </CardContent>
             </Card>

@@ -29,6 +29,8 @@ const settingsSchema = z.object({
   shop_address: z.string().max(200),
   facebook_url: z.string().url().max(200).or(z.literal("")),
   instagram_url: z.string().url().max(200).or(z.literal("")),
+  work_hours_weekdays: z.string().max(100),
+  work_hours_weekend: z.string().max(100),
 });
 
 type SettingsForm = z.infer<typeof settingsSchema>;
@@ -77,6 +79,8 @@ const AdminParametres = () => {
       shop_address: "",
       facebook_url: "",
       instagram_url: "",
+      work_hours_weekdays: "",
+      work_hours_weekend: "",
     },
   });
 
@@ -105,6 +109,8 @@ const AdminParametres = () => {
         shop_address: settings.shop_address || "",
         facebook_url: settings.facebook_url || "",
         instagram_url: settings.instagram_url || "",
+        work_hours_weekdays: settings.work_hours_weekdays || "",
+        work_hours_weekend: settings.work_hours_weekend || "",
       });
     }
   }, [settings, form]);
@@ -309,6 +315,45 @@ const AdminParametres = () => {
                       <FormLabel>Adresse</FormLabel>
                       <FormControl>
                         <Textarea placeholder="Le Krib, Siliana, Tunisie" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Work hours */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Horaires d'ouverture</CardTitle>
+                <CardDescription>
+                  Définissez vos horaires d'ouverture affichés sur le site
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="work_hours_weekdays"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Jours de semaine</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Lundi - Samedi: 9h00 - 19h00" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="work_hours_weekend"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Week-end / Jours fermés</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Dimanche: Fermé" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
