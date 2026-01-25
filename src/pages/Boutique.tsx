@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useProducts, useCategories } from "@/hooks/useProducts";
+import { useProducts, useCategories, useAllCategories } from "@/hooks/useProducts";
 
 const Boutique = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -24,6 +24,7 @@ const Boutique = () => {
 
   const { data: products, isLoading } = useProducts(categorySlug);
   const { data: categories } = useCategories();
+  const { data: allCategories } = useAllCategories();
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
@@ -61,8 +62,8 @@ const Boutique = () => {
 
     return result;
   }, [products, searchQuery, sortBy]);
-
-  const currentCategory = categories?.find((c) => c.slug === categorySlug);
+  // Find current category from all categories (including subcategories)
+  const currentCategory = allCategories?.find((c) => c.slug === categorySlug);
 
   const clearCategory = () => {
     searchParams.delete("category");
@@ -121,18 +122,35 @@ const Boutique = () => {
           </div>
         )}
 
-        {/* Category links */}
+        {/* Category links with subcategories */}
         {!currentCategory && categories && (
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="space-y-4 mb-6">
             {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant="outline"
-                size="sm"
-                onClick={() => setSearchParams({ category: category.slug })}
-              >
-                {category.name}
-              </Button>
+              <div key={category.id} className="space-y-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSearchParams({ category: category.slug })}
+                  className="font-semibold"
+                >
+                  {category.name}
+                </Button>
+                {category.subcategories && category.subcategories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 ml-4">
+                    {category.subcategories.map((sub) => (
+                      <Button
+                        key={sub.id}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSearchParams({ category: sub.slug })}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        {sub.name}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
