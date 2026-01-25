@@ -1,5 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+
+export interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  description: string | null;
+  display_order: number;
+}
 
 export interface Product {
   id: string;
@@ -12,9 +21,15 @@ export interface Product {
   images: string[];
   is_published: boolean;
   is_featured: boolean;
+  brand_id: string | null;
   created_at: string;
   updated_at: string;
   category?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  brand?: {
     id: string;
     name: string;
     slug: string;
@@ -161,5 +176,52 @@ export function useAllCategories() {
       if (error) throw error;
       return data as Category[];
     },
+  });
+}
+
+export function useBrands() {
+  return useQuery({
+    queryKey: ["brands"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("brands")
+        .select("*")
+        .order("display_order", { ascending: true });
+
+      if (error) throw error;
+      return data as Brand[];
+    },
+  });
+}
+
+export function useProductsByBrand(brandSlug?: string) {
+  return useQuery({
+    queryKey: ["products-by-brand", brandSlug],
+    queryFn: async () => {
+      if (!brandSlug) return [];
+      
+      const { data: brand } = await supabase
+        .from("brands")
+        .select("id")
+        .eq("slug", brandSlug)
+        .maybeSingle();
+
+      if (!brand) return [];
+
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          *,
+          category:categories(id, name, slug),
+          brand:brands(id, name, slug)
+        `)
+        .eq("is_published", true)
+        .eq("brand_id", brand.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as Product[];
+    },
+    enabled: !!brandSlug,
   });
 }

@@ -39,6 +39,7 @@ const productSchema = z.object({
   price: z.coerce.number().min(0, "Le prix doit être positif"),
   stock: z.coerce.number().int().min(0, "Le stock doit être positif"),
   category_id: z.string().uuid().optional().nullable(),
+  brand_id: z.string().uuid().optional().nullable(),
   is_published: z.boolean().default(true),
   is_featured: z.boolean().default(false),
   images: z.array(z.string()).default([]),
@@ -62,6 +63,7 @@ const AdminProductForm = () => {
       price: 0,
       stock: 0,
       category_id: null,
+      brand_id: null,
       is_published: true,
       is_featured: false,
       images: [],
@@ -74,6 +76,19 @@ const AdminProductForm = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
+        .select("*")
+        .order("display_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch brands
+  const { data: brands } = useQuery({
+    queryKey: ["brands"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("brands")
         .select("*")
         .order("display_order");
       if (error) throw error;
@@ -106,6 +121,7 @@ const AdminProductForm = () => {
         price: Number(product.price),
         stock: product.stock,
         category_id: product.category_id,
+        brand_id: product.brand_id,
         is_published: product.is_published ?? true,
         is_featured: product.is_featured ?? false,
         images: product.images || [],
@@ -137,6 +153,7 @@ const AdminProductForm = () => {
         price: data.price,
         stock: data.stock,
         category_id: data.category_id || null,
+        brand_id: data.brand_id || null,
         is_published: data.is_published,
         is_featured: data.is_featured,
         images: data.images,
@@ -348,7 +365,35 @@ const AdminProductForm = () => {
                             <SelectContent>
                               {categories?.map((cat) => (
                                 <SelectItem key={cat.id} value={cat.id}>
-                                  {cat.name}
+                                  {cat.parent_id ? `  └ ${cat.name}` : cat.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="brand_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Marque</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value || ""}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Sélectionner une marque" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {brands?.map((brand) => (
+                                <SelectItem key={brand.id} value={brand.id}>
+                                  {brand.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>

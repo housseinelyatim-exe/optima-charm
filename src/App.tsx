@@ -18,6 +18,7 @@ import AdminProductForm from "./pages/admin/AdminProductForm";
 import AdminCommandes from "./pages/admin/AdminCommandes";
 import AdminStatistiques from "./pages/admin/AdminStatistiques";
 import AdminParametres from "./pages/admin/AdminParametres";
+import Marques from "./pages/Marques";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/commander" element={<Commander />} />
             <Route path="/confirmation/:orderNumber" element={<Confirmation />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/marques/:slug" element={<Marques />} />
             
             {/* Admin routes */}
             <Route path="/admin" element={<AdminLogin />} />
