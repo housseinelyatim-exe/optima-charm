@@ -13,6 +13,11 @@ import Confirmation from "./pages/Confirmation";
 import Contact from "./pages/Contact";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProduits from "./pages/admin/AdminProduits";
+import AdminProductForm from "./pages/admin/AdminProductForm";
+import AdminCommandes from "./pages/admin/AdminCommandes";
+import AdminStatistiques from "./pages/admin/AdminStatistiques";
+import AdminParametres from "./pages/admin/AdminParametres";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +30,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/boutique" element={<Boutique />} />
             <Route path="/produit/:slug" element={<ProductDetail />} />
@@ -32,8 +38,17 @@ const App = () => (
             <Route path="/commander" element={<Commander />} />
             <Route path="/confirmation/:orderNumber" element={<Confirmation />} />
             <Route path="/contact" element={<Contact />} />
+            
+            {/* Admin routes */}
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/produits" element={<AdminProduits />} />
+            <Route path="/admin/produits/nouveau" element={<AdminProductForm />} />
+            <Route path="/admin/produits/:id" element={<AdminProductForm />} />
+            <Route path="/admin/commandes" element={<AdminCommandes />} />
+            <Route path="/admin/statistiques" element={<AdminStatistiques />} />
+            <Route path="/admin/parametres" element={<AdminParametres />} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
