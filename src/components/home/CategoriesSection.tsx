@@ -1,72 +1,80 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Glasses, Sun, Eye, Package } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { useCategories } from "@/hooks/useProducts";
+import { ArrowRight } from "lucide-react";
+import categoryMen from "@/assets/category-men.jpg";
+import categoryWomen from "@/assets/category-women.jpg";
+import categoryKids from "@/assets/category-kids.jpg";
 
-const categoryIcons: Record<string, React.ReactNode> = {
-  "lunettes-optiques": <Glasses className="h-8 w-8" />,
-  "lunettes-solaires": <Sun className="h-8 w-8" />,
-  "lentilles": <Eye className="h-8 w-8" />,
-  "accessoires": <Package className="h-8 w-8" />,
-};
+const categories = [
+  {
+    id: "men",
+    title: "Homme",
+    subtitle: "Collection masculine",
+    image: categoryMen,
+    link: "/categorie?gender=homme",
+  },
+  {
+    id: "women",
+    title: "Femme",
+    subtitle: "Collection féminine",
+    image: categoryWomen,
+    link: "/categorie?gender=femme",
+  },
+  {
+    id: "kids",
+    title: "Enfant",
+    subtitle: "Collection enfant",
+    image: categoryKids,
+    link: "/categorie?gender=enfant",
+  },
+];
 
 export function CategoriesSection() {
-  const { data: categories } = useCategories();
-
-  // Only show main categories (those without parent_id)
-  const mainCategories = categories?.filter(c => !c.parent_id);
-
   return (
-    <section className="py-16 md:py-24 bg-secondary/30">
+    <section className="py-16 md:py-24 bg-background">
       <div className="container">
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
-            Nos Catégories
+            Trouvez Votre Style
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Explorez notre sélection de lunettes et accessoires pour tous vos besoins visuels
+            Des lunettes pour toute la famille, alliant confort et élégance
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {mainCategories?.map((category) => (
-            <div key={category.id} className="space-y-3">
-              <Link to={`/boutique?category=${category.slug}`}>
-                <Card className="group h-full border-0 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                  <CardContent className="p-6 text-center">
-                    <div className="mb-4 mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
-                      {categoryIcons[category.slug] || <Package className="h-8 w-8" />}
-                    </div>
-                    <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">
-                      {category.name}
-                    </h3>
-                    {category.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {category.description}
-                      </p>
-                    )}
-                    <div className="mt-4 flex items-center justify-center text-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                      Voir plus <ArrowRight className="h-4 w-4 ml-1" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+        <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+          {categories.map((category, index) => (
+            <Link
+              key={category.id}
+              to={category.link}
+              className="group relative overflow-hidden rounded-2xl aspect-[3/4] animate-fade-in"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              {/* Background Image */}
+              <div
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                style={{ backgroundImage: `url(${category.image})` }}
+              />
               
-              {/* Subcategories */}
-              {category.subcategories && category.subcategories.length > 0 && (
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {category.subcategories.map((sub) => (
-                    <Link
-                      key={sub.id}
-                      to={`/boutique?category=${sub.slug}`}
-                      className="text-xs px-3 py-1 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
-                    >
-                      {sub.name}
-                    </Link>
-                  ))}
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-70 transition-opacity duration-300" />
+              
+              {/* Content */}
+              <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
+                <div className="transform transition-transform duration-300 group-hover:-translate-y-2">
+                  <p className="text-white/70 text-sm mb-1">{category.subtitle}</p>
+                  <h3 className="text-white text-2xl md:text-3xl font-display font-bold mb-3">
+                    {category.title}
+                  </h3>
+                  <div className="flex items-center gap-2 text-white font-medium">
+                    <span>Découvrir</span>
+                    <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-2" />
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+              
+              {/* Hover Border Effect */}
+              <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/30 rounded-2xl transition-all duration-300" />
+            </Link>
           ))}
         </div>
       </div>
