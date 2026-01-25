@@ -34,6 +34,7 @@ const settingsSchema = z.object({
   work_hours_weekend: z.string().max(100),
   announcement_enabled: z.string(),
   announcement_text: z.string().max(200),
+  delivery_price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Prix invalide").or(z.literal("")),
 });
 
 type SettingsForm = z.infer<typeof settingsSchema>;
@@ -86,6 +87,7 @@ const AdminParametres = () => {
       work_hours_weekend: "",
       announcement_enabled: "false",
       announcement_text: "",
+      delivery_price: "7",
     },
   });
 
@@ -118,6 +120,7 @@ const AdminParametres = () => {
         work_hours_weekend: settings.work_hours_weekend || "",
         announcement_enabled: settings.announcement_enabled || "false",
         announcement_text: settings.announcement_text || "",
+        delivery_price: settings.delivery_price || "7",
       });
     }
   }, [settings, form]);
@@ -366,6 +369,37 @@ const AdminParametres = () => {
                       <FormLabel>Adresse</FormLabel>
                       <FormControl>
                         <Textarea placeholder="Le Krib, Siliana, Tunisie" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Delivery settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Livraison</CardTitle>
+                <CardDescription>
+                  Configurez les frais de livraison à domicile
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="delivery_price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Prix de livraison (TND)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01" 
+                          min="0"
+                          placeholder="7.00" 
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
