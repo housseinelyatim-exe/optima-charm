@@ -72,14 +72,26 @@ const AdminProductForm = () => {
 
   // Fetch categories
   const { data: categories } = useQuery({
-    queryKey: ["categories"],
+    queryKey: ["admin-categories"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
         .select("*")
         .order("display_order");
       if (error) throw error;
-      return data;
+      
+      // Organize hierarchically for display
+      const allCats = data || [];
+      const mainCats = allCats.filter(c => !c.parent_id);
+      const result: typeof allCats = [];
+      
+      mainCats.forEach(main => {
+        result.push(main);
+        const subs = allCats.filter(c => c.parent_id === main.id);
+        subs.forEach(sub => result.push(sub));
+      });
+      
+      return result;
     },
   });
 
