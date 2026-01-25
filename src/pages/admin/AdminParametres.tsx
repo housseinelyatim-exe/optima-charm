@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Upload, X } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 const settingsSchema = z.object({
   hero_tagline: z.string().max(100),
   hero_subtitle: z.string().max(200),
+  hero_background_image: z.string().max(500).or(z.literal("")),
   shop_phone: z.string().max(20),
   shop_email: z.string().email().max(100),
   shop_address: z.string().max(200),
@@ -35,12 +36,42 @@ type SettingsForm = z.infer<typeof settingsSchema>;
 const AdminParametres = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [isUploadingHeroImage, setIsUploadingHeroImage] = useState(false);
+
+  const handleHeroImageUpload = useCallback(async (file: File, onChange: (value: string) => void) => {
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Erreur", description: "Le fichier doit être une image", variant: "destructive" });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Erreur", description: "L'image ne doit pas dépasser 10MB", variant: "destructive" });
+      return;
+    }
+
+    setIsUploadingHeroImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const { data, error } = await supabase.functions.invoke("cloudinary-upload", { body: formData });
+      if (error) throw error;
+      if (!data?.url) throw new Error("URL non reçue");
+
+      onChange(data.url);
+      toast({ title: "Image uploadée", description: "L'image de fond a été ajoutée" });
+    } catch (error) {
+      toast({ title: "Erreur d'upload", description: "Impossible d'uploader l'image", variant: "destructive" });
+    } finally {
+      setIsUploadingHeroImage(false);
+    }
+  }, [toast]);
 
   const form = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       hero_tagline: "",
       hero_subtitle: "",
+      hero_background_image: "",
       shop_phone: "",
       shop_email: "",
       shop_address: "",
@@ -68,6 +99,7 @@ const AdminParametres = () => {
       form.reset({
         hero_tagline: settings.hero_tagline || "",
         hero_subtitle: settings.hero_subtitle || "",
+        hero_background_image: settings.hero_background_image || "",
         shop_phone: settings.shop_phone || "",
         shop_email: settings.shop_email || "",
         shop_address: settings.shop_address || "",
@@ -162,6 +194,64 @@ const AdminParametres = () => {
                           placeholder="Découvrez notre collection exclusive..."
                           {...field}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="hero_background_image"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image de fond</FormLabel>
+                      <FormControl>
+                        <div className="space-y-3">
+                          {field.value ? (
+                            <div className="relative w-full max-w-md">
+                              <img
+                                src={field.value}
+                                alt="Fond hero"
+                                className="w-full h-40 object-cover rounded-lg border"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => field.onChange("")}
+                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <label
+                              className={`flex flex-col items-center justify-center w-full max-w-md h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary hover:bg-secondary/50 transition-colors ${
+                                isUploadingHeroImage ? "opacity-50 pointer-events-none" : ""
+                              }`}
+                            >
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleHeroImageUpload(file, field.onChange);
+                                }}
+                                disabled={isUploadingHeroImage}
+                              />
+                              {isUploadingHeroImage ? (
+                                <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
+                              ) : (
+                                <>
+                                  <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                                  <span className="text-sm text-muted-foreground">
+                                    Cliquez pour ajouter une image
+                                  </span>
+                                </>
+                              )}
+                            </label>
+                          )}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
