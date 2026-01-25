@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCart } from "@/hooks/useCart";
 import { useCategories, useBrands } from "@/hooks/useProducts";
+import { useSettings } from "@/hooks/useSettings";
 import optimaLogo from "@/assets/optima-logo.png";
 
 export function Header() {
@@ -19,6 +20,9 @@ export function Header() {
   const { items } = useCart();
   const { data: categories } = useCategories();
   const { data: brands } = useBrands();
+  const { data: settings } = useSettings();
+
+  const phone = settings?.shop_phone || "+216 XX XXX XXX";
 
   const isActive = (href: string) => {
     if (href === "/") return location.pathname === "/";
@@ -147,11 +151,11 @@ export function Header() {
         <div className="flex items-center gap-3">
           {/* Phone - Desktop only */}
           <a
-            href="tel:+21600000000"
+            href={`tel:${phone.replace(/\s/g, "")}`}
             className="hidden lg:flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             <Phone className="h-4 w-4" />
-            <span>+216 XX XXX XXX</span>
+            <span>{phone}</span>
           </a>
 
           {/* Cart */}
@@ -265,11 +269,11 @@ export function Header() {
                 </nav>
                 <div className="border-t pt-4">
                   <a
-                    href="tel:+21600000000"
+                    href={`tel:${phone.replace(/\s/g, "")}`}
                     className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
                   >
                     <Phone className="h-4 w-4" />
-                    <span>+216 XX XXX XXX</span>
+                    <span>{phone}</span>
                   </a>
                 </div>
               </div>
