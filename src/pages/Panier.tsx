@@ -105,57 +105,67 @@ const Panier = () => {
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
               <Card key={item.id} className="overflow-hidden">
-                <CardContent className="p-4 flex gap-4">
-                  <div className="w-24 h-24 flex-shrink-0 rounded-md overflow-hidden bg-secondary">
-                    <img
-                      src={item.image || "/placeholder.svg"}
-                      alt={item.name}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium truncate">{item.name}</h3>
-                    <p className="text-primary font-semibold">
-                      {item.price.toFixed(2)} TND
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity - 1)
-                        }
-                      >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <span className="w-8 text-center font-medium">
-                        {item.quantity}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1)
-                        }
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 ml-auto text-muted-foreground hover:text-destructive"
-                        onClick={() => removeItem(item.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                <CardContent className="p-4">
+                  <div className="flex gap-3 md:gap-4">
+                    {/* Image - smaller on mobile */}
+                    <div className="w-20 h-20 md:w-24 md:h-24 flex-shrink-0 rounded-md overflow-hidden bg-secondary">
+                      <img
+                        src={item.image || "/placeholder.svg"}
+                        alt={item.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    
+                    {/* Content - full width on mobile, flex on desktop */}
+                    <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                      {/* Product info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm md:text-base line-clamp-2 mb-1">
+                          {item.name}
+                        </h3>
+                        <p className="text-primary font-semibold text-sm md:text-base">
+                          {item.price.toFixed(2)} TND
+                        </p>
+                      </div>
+                      
+                      {/* Price - move to top right on mobile */}
+                      <div className="md:text-right order-first md:order-last">
+                        <p className="font-semibold text-sm md:text-base">
+                          {(item.price * item.quantity).toFixed(2)} TND
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold">
-                      {(item.price * item.quantity).toFixed(2)} TND
-                    </p>
+                  
+                  {/* Quantity controls - full width on mobile */}
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t md:border-0 md:pt-0 md:ml-24">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 shrink-0"
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                    <span className="w-10 text-center font-medium text-sm">
+                      {item.quantity}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 shrink-0"
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 ml-auto text-muted-foreground hover:text-destructive shrink-0"
+                      onClick={() => removeItem(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
