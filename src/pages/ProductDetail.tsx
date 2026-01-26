@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Minus, Plus, ShoppingBag, Check } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShoppingBag, Check, AlertCircle, XCircle } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -136,16 +136,24 @@ const ProductDetail = () => {
 
             {/* Stock status */}
             <div className="flex items-center gap-2">
-              {inStock ? (
+              {product.stock === 0 ? (
+                <>
+                  <XCircle className="h-4 w-4 text-destructive" />
+                  <Badge variant="destructive">Rupture de stock</Badge>
+                </>
+              ) : product.stock <= 5 ? (
+                <>
+                  <AlertCircle className="h-4 w-4 text-warning" />
+                  <span className="text-warning font-medium">Quelques articles restants</span>
+                  <Badge variant="outline" className="text-warning border-warning">
+                    Stock limité
+                  </Badge>
+                </>
+              ) : (
                 <>
                   <Check className="h-4 w-4 text-success" />
                   <span className="text-success font-medium">En stock</span>
-                  <span className="text-muted-foreground">
-                    ({product.stock} disponible{product.stock > 1 ? "s" : ""})
-                  </span>
                 </>
-              ) : (
-                <Badge variant="destructive">Rupture de stock</Badge>
               )}
             </div>
 
