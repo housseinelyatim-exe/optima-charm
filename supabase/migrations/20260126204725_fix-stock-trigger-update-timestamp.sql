@@ -18,7 +18,7 @@ BEGIN
     WHERE id = NEW.product_id;
     
     -- Optionally check if stock went negative and log a warning
-    PERFORM *
+    PERFORM 1
     FROM products
     WHERE id = NEW.product_id AND stock < 0;
     
