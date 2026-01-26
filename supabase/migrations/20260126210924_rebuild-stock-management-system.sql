@@ -86,7 +86,9 @@ DECLARE
   v_restored_count INTEGER := 0;
 BEGIN
   -- Only restore stock if order is being cancelled
-  IF OLD.status = 'cancelled' OR NEW.status != 'cancelled' THEN
+  IF OLD.status != 'cancelled' AND NEW.status = 'cancelled' THEN
+    -- Continue with stock restoration
+  ELSE
     RETURN NEW;
   END IF;
 
@@ -198,6 +200,7 @@ SECURITY DEFINER
 AS $$
 DECLARE
   v_order_number TEXT;
+  v_current_stock INTEGER;
 BEGIN
   -- Get order number for logging
   SELECT order_number INTO v_order_number
@@ -227,15 +230,11 @@ BEGIN
   
   -- Verify stock was reduced (for debugging)
   IF p_product_id IS NOT NULL THEN
-    DECLARE
-      v_current_stock INTEGER;
-    BEGIN
-      SELECT stock INTO v_current_stock
-      FROM public.products
-      WHERE id = p_product_id;
-      
-      RAISE NOTICE 'Current stock for product % is now: %', p_product_id, v_current_stock;
-    END;
+    SELECT stock INTO v_current_stock
+    FROM public.products
+    WHERE id = p_product_id;
+    
+    RAISE NOTICE 'Current stock for product % is now: %', p_product_id, v_current_stock;
   END IF;
 END;
 $$;
