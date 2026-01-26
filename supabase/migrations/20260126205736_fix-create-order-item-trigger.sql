@@ -12,23 +12,14 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 -- Removed restrictive search_path to allow triggers to execute properly
 AS $$
-DECLARE
-  v_old_stock INTEGER;
-  v_new_stock INTEGER;
 BEGIN
-  -- Insert order item (this should trigger reduce_stock_on_order)
+  -- Insert order item (this will trigger reduce_stock_on_order)
   INSERT INTO order_items (
     order_id, product_id, product_name, quantity, price_at_purchase
   )
   VALUES (
     p_order_id, p_product_id, p_product_name, p_quantity, p_price_at_purchase
   );
-  
-  -- Add verification logging (optional, helps debug)
-  IF p_product_id IS NOT NULL THEN
-    SELECT stock INTO v_new_stock FROM products WHERE id = p_product_id;
-    RAISE NOTICE 'Stock after insert for product %: %', p_product_id, v_new_stock;
-  END IF;
 END;
 $$;
 
