@@ -190,10 +190,11 @@ const Commander = () => {
       // Clear cart and invalidate product queries
       clearCart();
       
-      // Invalidate product-related queries to refresh stock across the app
+      // Invalidate all product-related queries to refresh stock
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["product"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       
       navigate(`/confirmation/${order.order_number}`);
     } catch (error) {
