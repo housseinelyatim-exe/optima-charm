@@ -86,9 +86,7 @@ DECLARE
   v_restored_count INTEGER := 0;
 BEGIN
   -- Only restore stock if order is being cancelled
-  IF OLD.status != 'cancelled' AND NEW.status = 'cancelled' THEN
-    -- Continue with stock restoration
-  ELSE
+  IF OLD.status = 'cancelled' OR NEW.status != 'cancelled' THEN
     RETURN NEW;
   END IF;
 
@@ -206,6 +204,11 @@ BEGIN
   SELECT order_number INTO v_order_number
   FROM public.orders
   WHERE id = p_order_id;
+
+  IF v_order_number IS NULL THEN
+    RAISE WARNING 'Order % not found', p_order_id;
+    RETURN;
+  END IF;
 
   RAISE NOTICE 'Creating order item for order %: product=%, quantity=%', 
     v_order_number, p_product_name, p_quantity;
