@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { Truck, Store, ArrowLeft, Loader2, Tag, X } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ type CheckoutForm = z.infer<typeof checkoutSchema>;
 const Commander = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { items, total, clearCart } = useCart();
   const { toast } = useToast();
   const { data: settings } = useSettings();
@@ -185,8 +187,14 @@ const Commander = () => {
         });
       }
 
-      // Clear cart and redirect
+      // Clear cart and invalidate product queries
       clearCart();
+      
+      // Invalidate product-related queries to refresh stock across the app
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["product"] });
+      
       navigate(`/confirmation/${order.order_number}`);
     } catch (error) {
       console.error("Order error:", error);
