@@ -22,6 +22,7 @@ import AdminParametres from "./pages/admin/AdminParametres";
 import AdminInstagram from "./pages/admin/AdminInstagram";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminCoupons from "./pages/admin/AdminCoupons";
+import AdminAccount from "./pages/admin/AdminAccount";
 import Marques from "./pages/Marques";
 import NotFound from "./pages/NotFound";
 
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/admin/instagram" element={<AdminInstagram />} />
             <Route path="/admin/categories" element={<AdminCategories />} />
             <Route path="/admin/coupons" element={<AdminCoupons />} />
+            <Route path="/admin/account" element={<AdminAccount />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

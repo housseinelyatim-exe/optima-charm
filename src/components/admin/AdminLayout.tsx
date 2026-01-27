@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   Images,
   Tag,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -30,6 +31,7 @@ const navItems = [
   { name: "Catégories", href: "/admin/categories", icon: Images },
   { name: "Codes Promo", href: "/admin/coupons", icon: Tag },
   { name: "Paramètres", href: "/admin/parametres", icon: Settings },
+  { name: "Mon compte", href: "/admin/account", icon: User },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
