@@ -32,11 +32,13 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://optima-optique.com/" />
     <meta property="og:site_name" content="Optima Optique" />
+    <meta property="og:image" content="https://optima-optique.com/og-image.png" />
 
     <!-- TWITTER -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Optima Optique" />
     <meta name="twitter:description" content="Votre destination pour des lunettes de qualité, montures élégantes et verres optiques." />
+    <meta name="twitter:image" content="https://optima-optique.com/og-image.png" />
     
     <!-- FAVICON -->
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -46,13 +48,54 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Store",
+      "@type": "OpticalStore",
       "name": "Optima Optique",
+      "alternateName": "Optima Optique by Emina Bettaher",
       "url": "https://optima-optique.com",
-      "description": "Votre destination pour des lunettes de qualité, montures élégantes et verres optiques.",
+      "logo": "https://optima-optique.com/optima-logo.png",
+      "image": "https://optima-optique.com/og-image.png",
+      "description": "Votre opticien de confiance au Krib, Siliana. Lunettes de vue et de soleil, grandes marques, service personnalisé.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Le Krib",
+        "addressLocality": "Le Krib",
+        "addressRegion": "Siliana",
+        "addressCountry": "TN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 36.3167,
+        "longitude": 9.1167
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+          "opens": "09:00",
+          "closes": "19:00"
+        }
+      ],
+      "priceRange": "$$",
+      "sameAs": [
+        "https://facebook.com/optimaoptique",
+        "https://instagram.com/optima_optique_krib"
+      ],
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://optima-optique.com/produits?search={search_term_string}",
+        "target": "https://optima-optique.com/boutique?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Optima Optique",
+      "url": "https://optima-optique.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://optima-optique.com/boutique?search={search_term_string}",
         "query-input": "required name=search_term_string"
       }
     }

@@ -220,7 +220,7 @@ const AdminLogin = () => {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="admin@optima-optique.tn"
+                          placeholder="admin@optima-optique.com"
                           {...field}
                         />
                       </FormControl>
