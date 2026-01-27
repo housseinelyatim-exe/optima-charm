@@ -1,19 +1,5 @@
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
-Crawl-delay: 2
+Disallow: /admin/
 
-Sitemap: https://optima-optique.tn/sitemap.xml
+Sitemap: https://optima-optique.com/sitemap.xml
