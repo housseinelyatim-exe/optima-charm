@@ -35,7 +35,7 @@ const emailSchema = z.object({
 });
 
 const passwordSchema = z.object({
-  current_password: z.string().min(6, "Mot de passe actuel requis"),
+  current_password: z.string().min(1, "Mot de passe actuel requis"),
   new_password: z.string().min(6, "Le nouveau mot de passe doit contenir au moins 6 caractères"),
   confirm_password: z.string().min(6, "Confirmation requise"),
 }).refine((data) => data.new_password === data.confirm_password, {
