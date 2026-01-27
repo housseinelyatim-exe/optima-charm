@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -59,7 +59,7 @@ const AdminAccount = () => {
   const [pendingEmailChange, setPendingEmailChange] = useState<EmailForm | null>(null);
 
   // Get current user email
-  useState(() => {
+  useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) {
@@ -67,7 +67,7 @@ const AdminAccount = () => {
       }
     };
     getCurrentUser();
-  });
+  }, []);
 
   const emailForm = useForm<EmailForm>({
     resolver: zodResolver(emailSchema),
@@ -118,7 +118,6 @@ const AdminAccount = () => {
         description: "Un email de confirmation a été envoyé à votre nouvelle adresse. Veuillez vérifier votre boîte de réception.",
       });
 
-      setCurrentEmail(pendingEmailChange.new_email);
       emailForm.reset();
       setShowEmailDialog(false);
       setPendingEmailChange(null);
