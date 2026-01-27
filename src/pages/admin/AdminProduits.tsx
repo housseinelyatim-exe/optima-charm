@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getStockBadgeVariant, getStockStatus } from "@/lib/stockUtils";
 
 const AdminProduits = () => {
   const queryClient = useQueryClient();
@@ -188,10 +189,8 @@ const AdminProduits = () => {
                       {Number(product.price).toFixed(2)} TND
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge
-                        variant={product.stock > 0 ? "secondary" : "destructive"}
-                      >
-                        {product.stock}
+                      <Badge variant={getStockBadgeVariant(product.stock)}>
+                        {getStockStatus(product.stock)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
