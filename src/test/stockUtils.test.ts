@@ -23,16 +23,26 @@ describe("Stock Management Utils", () => {
         error: null,
       });
       const mockUpdate = vi.fn().mockReturnThis();
-      const mockUpdateEq = vi.fn().mockResolvedValue({ error: null });
+      const mockUpdateEq = vi.fn().mockResolvedValue({ 
+        data: null, 
+        error: null 
+      });
 
       vi.mocked(supabase.from).mockImplementation((table: string) => {
         if (table === "products") {
           return {
             select: mockSelect,
             update: mockUpdate,
+            delete: vi.fn().mockReturnThis(),
+            insert: vi.fn().mockReturnThis(),
           } as unknown as ReturnType<typeof supabase.from>;
         }
-        return {} as unknown as ReturnType<typeof supabase.from>;
+        return {
+          select: vi.fn().mockReturnThis(),
+          update: vi.fn().mockReturnThis(),
+          delete: vi.fn().mockReturnThis(),
+          insert: vi.fn().mockReturnThis(),
+        } as unknown as ReturnType<typeof supabase.from>;
       });
 
       mockSelect.mockReturnValue({

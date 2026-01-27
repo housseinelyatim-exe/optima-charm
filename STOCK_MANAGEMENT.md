@@ -12,7 +12,9 @@ The stock management system operates on three levels:
 
 The core stock management logic resides in the database layer using PostgreSQL triggers:
 
-**File:** `/supabase/migrations/20260126210924_rebuild-stock-management-system.sql`
+**File:** `/supabase/migrations/20260126210924_rebuild-stock-management-system.sql` *(pre-existing migration)*
+
+> **Note:** This migration file was already present in the database layer before this PR. It implements the foundational triggers and RPC functions that power the automatic stock management system.
 
 #### Key Components:
 

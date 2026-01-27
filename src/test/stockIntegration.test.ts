@@ -138,7 +138,11 @@ describe("Stock Update Integration", () => {
             error: null,
           }) as unknown as ReturnType<typeof supabase.rpc>;
         }
-        return Promise.resolve({ data: null, error: null }) as unknown as ReturnType<typeof supabase.rpc>;
+        // Default fallback for other RPC calls
+        return Promise.resolve({
+          data: null,
+          error: { message: `RPC function ${fnName} not mocked` },
+        }) as unknown as ReturnType<typeof supabase.rpc>;
       });
 
       const orderItems = [
