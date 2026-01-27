@@ -52,7 +52,7 @@ const Contact = () => {
                     href={`mailto:${settings?.shop_email}`}
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
-                    {settings?.shop_email || "contact@optima-optique.tn"}
+                    {settings?.shop_email || "contact@optima-optique.com"}
                   </a>
                   <p className="text-sm text-muted-foreground mt-1">
                     Nous répondons sous 24h

@@ -352,7 +352,7 @@ const AdminParametres = () => {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="contact@optima-optique.tn"
+                          placeholder="contact@optima-optique.com"
                           {...field}
                         />
                       </FormControl>

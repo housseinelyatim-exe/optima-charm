@@ -7,7 +7,7 @@ export function Footer() {
   const { data: settings } = useSettings();
 
   const phone = settings?.shop_phone || "+216 XX XXX XXX";
-  const email = settings?.shop_email || "contact@optima-optique.tn";
+  const email = settings?.shop_email || "contact@optima-optique.com";
   const address = settings?.shop_address || "Le Krib, Siliana, Tunisie";
   const facebookUrl = settings?.facebook_url || "https://facebook.com/optimaoptique";
   const instagramUrl = settings?.instagram_url || "https://instagram.com/optima_optique_krib";
