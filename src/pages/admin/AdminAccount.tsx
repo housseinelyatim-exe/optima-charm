@@ -18,16 +18,6 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 const emailSchema = z.object({
   new_email: z.string().email("Adresse email invalide"),
@@ -55,8 +45,6 @@ const AdminAccount = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
-  const [pendingEmailChange, setPendingEmailChange] = useState<EmailForm | null>(null);
 
   // Get current user email
   useEffect(() => {
@@ -87,40 +75,32 @@ const AdminAccount = () => {
   });
 
   const handleEmailSubmit = async (data: EmailForm) => {
-    setPendingEmailChange(data);
-    setShowEmailDialog(true);
-  };
-
-  const confirmEmailChange = async () => {
-    if (!pendingEmailChange) return;
-    
     setIsLoadingEmail(true);
     try {
       // Verify current password first
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: currentEmail,
-        password: pendingEmailChange.password,
+        password: data.password,
       });
 
       if (signInError) {
         throw new Error("Mot de passe incorrect");
       }
 
-      // Update email
+      // Update email directly
       const { error: updateError } = await supabase.auth.updateUser({
-        email: pendingEmailChange.new_email,
+        email: data.new_email,
       });
 
       if (updateError) throw updateError;
 
+      setCurrentEmail(data.new_email);
       toast({
         title: "Email mis à jour",
-        description: "Un email de confirmation a été envoyé à votre nouvelle adresse. Veuillez vérifier votre boîte de réception.",
+        description: "Votre adresse email a été changée avec succès.",
       });
 
       emailForm.reset();
-      setShowEmailDialog(false);
-      setPendingEmailChange(null);
     } catch (error) {
       console.error("Email update error:", error);
       toast({
@@ -401,34 +381,6 @@ const AdminAccount = () => {
           </CardContent>
         </Card>
 
-        {/* Email Change Confirmation Dialog */}
-        <AlertDialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirmer le changement d'email</AlertDialogTitle>
-              <AlertDialogDescription>
-                Vous êtes sur le point de changer votre adresse email de <strong>{currentEmail}</strong> à <strong>{pendingEmailChange?.new_email}</strong>.
-                <br /><br />
-                Un email de confirmation sera envoyé à la nouvelle adresse. Vous devrez cliquer sur le lien de confirmation pour finaliser le changement.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setPendingEmailChange(null)}>
-                Annuler
-              </AlertDialogCancel>
-              <AlertDialogAction onClick={confirmEmailChange} disabled={isLoadingEmail}>
-                {isLoadingEmail ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Confirmation...
-                  </>
-                ) : (
-                  "Confirmer"
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </AdminLayout>
   );
