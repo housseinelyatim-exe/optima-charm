@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { Loader2, Lock, User, Eye, EyeOff, Mail } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,11 +19,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const emailSchema = z.object({
-  new_email: z.string().email("Adresse email invalide"),
-  password: z.string().min(1, "Le mot de passe est requis pour confirmer"),
-});
-
 const passwordSchema = z.object({
   current_password: z.string().min(1, "Mot de passe actuel requis"),
   new_password: z.string().min(6, "Le nouveau mot de passe doit contenir au moins 6 caractères"),
@@ -33,18 +28,15 @@ const passwordSchema = z.object({
   path: ["confirm_password"],
 });
 
-type EmailForm = z.infer<typeof emailSchema>;
 type PasswordForm = z.infer<typeof passwordSchema>;
 
 const AdminAccount = () => {
   const { toast } = useToast();
-  const [isLoadingEmail, setIsLoadingEmail] = useState(false);
   const [isLoadingPassword, setIsLoadingPassword] = useState(false);
   const [currentEmail, setCurrentEmail] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   // Get current user email
   useEffect(() => {
@@ -57,14 +49,6 @@ const AdminAccount = () => {
     getCurrentUser();
   }, []);
 
-  const emailForm = useForm<EmailForm>({
-    resolver: zodResolver(emailSchema),
-    defaultValues: {
-      new_email: "",
-      password: "",
-    },
-  });
-
   const passwordForm = useForm<PasswordForm>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
@@ -73,45 +57,6 @@ const AdminAccount = () => {
       confirm_password: "",
     },
   });
-
-  const handleEmailSubmit = async (data: EmailForm) => {
-    setIsLoadingEmail(true);
-    try {
-      // Verify current password first
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: currentEmail,
-        password: data.password,
-      });
-
-      if (signInError) {
-        throw new Error("Mot de passe incorrect");
-      }
-
-      // Update email directly
-      const { error: updateError } = await supabase.auth.updateUser({
-        email: data.new_email,
-      });
-
-      if (updateError) throw updateError;
-
-      setCurrentEmail(data.new_email);
-      toast({
-        title: "Email mis à jour",
-        description: "Votre adresse email a été changée avec succès.",
-      });
-
-      emailForm.reset();
-    } catch (error) {
-      console.error("Email update error:", error);
-      toast({
-        title: "Erreur",
-        description: error instanceof Error ? error.message : "Impossible de mettre à jour l'email",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoadingEmail(false);
-    }
-  };
 
   const handlePasswordSubmit = async (data: PasswordForm) => {
     setIsLoadingPassword(true);
@@ -172,87 +117,9 @@ const AdminAccount = () => {
           <CardContent>
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Email actuel:</span>
+              <span className="text-muted-foreground">Email:</span>
               <span className="font-medium">{currentEmail || "Chargement..."}</span>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Change Email */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              Changer l'adresse email
-            </CardTitle>
-            <CardDescription>
-              Vous recevrez un email de confirmation à la nouvelle adresse
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...emailForm}>
-              <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)} className="space-y-4">
-                <FormField
-                  control={emailForm.control}
-                  name="new_email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nouvelle adresse email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="nouveau@email.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={emailForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Mot de passe actuel (pour confirmer)</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="••••••••"
-                            {...field}
-                          />
-                          <button
-                            type="button"
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button type="submit" disabled={isLoadingEmail}>
-                  {isLoadingEmail ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Mise à jour...
-                    </>
-                  ) : (
-                    "Mettre à jour l'email"
-                  )}
-                </Button>
-              </form>
-            </Form>
           </CardContent>
         </Card>
 
@@ -380,7 +247,6 @@ const AdminAccount = () => {
             </Form>
           </CardContent>
         </Card>
-
       </div>
     </AdminLayout>
   );
