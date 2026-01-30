@@ -31,15 +31,15 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link to={`/produit/${product.slug}`}>
       <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
-        <div className="relative aspect-square overflow-hidden bg-secondary">
+        <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
           <img
             src={mainImage}
             alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
           />
           {!inStock && (
             <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-              <Badge variant="secondary" className="text-sm">
+              <Badge variant="destructive" className="text-sm">
                 Rupture de stock
               </Badge>
             </div>

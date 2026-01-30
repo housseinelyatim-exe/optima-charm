@@ -85,6 +85,5 @@ export const getStockBadgeVariant = (
  */
 export const getStockStatus = (stock: number): string => {
   if (stock === 0) return "Rupture de stock";
-  if (stock <= 5) return `Stock faible (${stock})`;
-  return `${stock} en stock`;
+  return "En stock";
 };
