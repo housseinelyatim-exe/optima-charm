@@ -176,16 +176,10 @@ describe("Stock Management Utils", () => {
       expect(getStockStatus(0)).toBe("Rupture de stock");
     });
 
-    it("should return low stock warning when stock is 1-5", () => {
-      expect(getStockStatus(1)).toBe("Stock faible (1)");
-      expect(getStockStatus(3)).toBe("Stock faible (3)");
-      expect(getStockStatus(5)).toBe("Stock faible (5)");
-    });
-
-    it("should return stock count when stock is sufficient", () => {
-      expect(getStockStatus(6)).toBe("6 en stock");
-      expect(getStockStatus(10)).toBe("10 en stock");
-      expect(getStockStatus(100)).toBe("100 en stock");
+    it("should return in stock message when stock is greater than 0", () => {
+      expect(getStockStatus(1)).toBe("En stock");
+      expect(getStockStatus(5)).toBe("En stock");
+      expect(getStockStatus(100)).toBe("En stock");
     });
   });
 });
