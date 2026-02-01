@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Loader2, Eye, EyeOff } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Eye, EyeOff, Search } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
   TableBody,
@@ -25,10 +26,12 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { searchBrandLogo } from "@/utils/brandfetch";
 
 interface Brand {
   id: string;
   name: string;
+  domain?: string;
   logo_url: string;
   display_order: number;
   is_active: boolean;
@@ -39,8 +42,11 @@ const AdminBrands = () => {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     name: "",
+    domain: "",
     logo_url: "",
     display_order: 0,
     is_active: true,
@@ -59,6 +65,51 @@ const AdminBrands = () => {
       return data as Brand[];
     },
   });
+
+  // Search brand logo using Brandfetch
+  const handleSearchBrand = async () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer un nom de marque",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const result = await searchBrandLogo(searchQuery);
+      
+      if (result) {
+        setFormData({
+          ...formData,
+          name: result.name,
+          domain: result.domain,
+          logo_url: result.logoUrl,
+        });
+        toast({
+          title: "Logo trouvé!",
+          description: `Logo de ${result.name} récupéré avec succès`,
+        });
+      } else {
+        toast({
+          title: "Marque introuvable",
+          description: "Essayez un autre nom ou entrez l'URL manuellement",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de rechercher la marque",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   // Create/Update mutation
   const saveMutation = useMutation({
@@ -122,7 +173,8 @@ const AdminBrands = () => {
   });
 
   const resetForm = () => {
-    setFormData({ name: "", logo_url: "", display_order: 0, is_active: true });
+    setFormData({ name: "", domain: "", logo_url: "", display_order: 0, is_active: true });
+    setSearchQuery("");
     setEditingBrand(null);
   };
 
@@ -130,15 +182,25 @@ const AdminBrands = () => {
     setEditingBrand(brand);
     setFormData({
       name: brand.name,
+      domain: brand.domain || "",
       logo_url: brand.logo_url,
       display_order: brand.display_order,
       is_active: brand.is_active,
     });
+    setSearchQuery(brand.name);
     setIsDialogOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.logo_url) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez rechercher un logo ou entrer une URL",
+        variant: "destructive",
+      });
+      return;
+    }
     saveMutation.mutate(editingBrand ? { ...formData, id: editingBrand.id } : formData);
   };
 
@@ -159,67 +221,122 @@ const AdminBrands = () => {
                 Ajouter une marque
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>
                   {editingBrand ? "Modifier la marque" : "Nouvelle marque"}
                 </DialogTitle>
                 <DialogDescription>
-                  Ajoutez ou modifiez une marque partenaire
+                  Recherchez une marque pour récupérer automatiquement son logo via Brandfetch
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Nom de la marque</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Ray-Ban"
-                    required
-                  />
+                {/* Brandfetch Search */}
+                <div className="space-y-2">
+                  <Label htmlFor="search">Rechercher une marque</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Ex: Ray-Ban, Oakley..."
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleSearchBrand();
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleSearchBrand}
+                      disabled={isSearching || !searchQuery.trim()}
+                    >
+                      {isSearching ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Search className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <Alert>
+                    <AlertDescription className="text-xs">
+                      💡 Entrez le nom de la marque et cliquez sur rechercher pour obtenir automatiquement le logo officiel
+                    </AlertDescription>
+                  </Alert>
                 </div>
-                <div>
-                  <Label htmlFor="logo_url">URL du logo</Label>
-                  <Input
-                    id="logo_url"
-                    value={formData.logo_url}
-                    onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                    placeholder="https://example.com/logo.png"
-                    required
-                  />
-                  {formData.logo_url && (
-                    <div className="mt-2 p-4 border rounded-lg flex items-center justify-center bg-muted">
+
+                {/* Logo Preview */}
+                {formData.logo_url && (
+                  <div className="space-y-2">
+                    <Label>Aperçu du logo</Label>
+                    <div className="p-6 border rounded-lg flex items-center justify-center bg-muted min-h-[120px]">
                       <img
                         src={formData.logo_url}
                         alt="Preview"
-                        className="max-h-16 max-w-full object-contain"
+                        className="max-h-20 max-w-full object-contain"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
+                          toast({
+                            title: "Erreur de chargement",
+                            description: "Le logo ne peut pas être chargé. Vérifiez l'URL ou recherchez à nouveau la marque.",
+                            variant: "destructive",
+                          });
                         }}
                       />
                     </div>
-                  )}
+                  </div>
+                )}
+
+                {/* Manual fields */}
+                <div className="space-y-4 pt-2 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    Ou entrez manuellement les informations:
+                  </p>
+                  
+                  <div>
+                    <Label htmlFor="name">Nom de la marque *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Ray-Ban"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="logo_url">URL du logo *</Label>
+                    <Input
+                      id="logo_url"
+                      value={formData.logo_url}
+                      onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
+                      placeholder="https://example.com/logo.png"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="display_order">Ordre d'affichage</Label>
+                    <Input
+                      id="display_order"
+                      type="number"
+                      value={formData.display_order}
+                      onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
+                      min="0"
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_active"
+                      checked={formData.is_active}
+                      onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                    />
+                    <Label htmlFor="is_active">Active</Label>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="display_order">Ordre d'affichage</Label>
-                  <Input
-                    id="display_order"
-                    type="number"
-                    value={formData.display_order}
-                    onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                    min="0"
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_active"
-                    checked={formData.is_active}
-                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                  />
-                  <Label htmlFor="is_active">Active</Label>
-                </div>
-                <div className="flex gap-2">
+
+                <div className="flex gap-2 pt-2">
                   <Button type="submit" className="flex-1" disabled={saveMutation.isPending}>
                     {saveMutation.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -243,7 +360,7 @@ const AdminBrands = () => {
           <CardHeader>
             <CardTitle>Liste des marques</CardTitle>
             <CardDescription>
-              {brands?.length || 0} marque(s) · Les marques sont affichées dans l'ordre croissant
+              {brands?.length || 0} marque(s) · Logos récupérés automatiquement via Brandfetch
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -257,6 +374,7 @@ const AdminBrands = () => {
                   <TableRow>
                     <TableHead>Logo</TableHead>
                     <TableHead>Nom</TableHead>
+                    <TableHead>Domaine</TableHead>
                     <TableHead>Ordre</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -278,6 +396,9 @@ const AdminBrands = () => {
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{brand.name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {brand.domain || '-'}
+                      </TableCell>
                       <TableCell>{brand.display_order}</TableCell>
                       <TableCell>
                         <Button
@@ -326,6 +447,14 @@ const AdminBrands = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Info card about Brandfetch */}
+        <Alert>
+          <Search className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Powered by Brandfetch</strong> - Les logos sont automatiquement récupérés depuis la base de données officielle de Brandfetch. Pas besoin de chercher les logos sur Google!
+          </AlertDescription>
+        </Alert>
       </div>
     </AdminLayout>
   );
