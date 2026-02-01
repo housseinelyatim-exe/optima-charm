@@ -72,12 +72,12 @@ export function BrandsCarousel() {
               {duplicatedBrands.map((brand, index) => (
                 <Card
                   key={`${brand.id}-${index}`}
-                  className="flex-shrink-0 w-32 md:w-40 h-20 md:h-24 p-4 flex items-center justify-center bg-foreground hover:shadow-lg transition-shadow duration-300 border-0"
+                  className="flex-shrink-0 w-32 md:w-40 h-20 md:h-24 p-4 flex items-center justify-center bg-background hover:shadow-lg transition-shadow duration-300 border"
                 >
                   <img
                     src={brand.logo_url!}
                     alt={brand.name}
-                    className="max-w-full max-h-full object-contain brightness-0 invert opacity-80 hover:opacity-100 transition-all duration-300"
+                    className="max-w-full max-h-full object-contain grayscale hover:grayscale-0 transition-all duration-300"
                     loading="lazy"
                   />
                 </Card>
