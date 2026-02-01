@@ -1,20 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
+import { useBrandsWithProducts } from "@/hooks/useBrandsWithProducts";
+import { useState } from "react";
 
 export function BrandsCarousel() {
-  const { data: brands, isLoading } = useQuery({
-    queryKey: ["brands"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("brands")
-        .select("*")
-        .order("display_order", { ascending: true });
-
-      if (error) throw error;
-      return data;
-    },
-  });
+  const { data: brands, isLoading } = useBrandsWithProducts();
+  const [failedImages, setFailedImages] = useState<Set<string>>(() => new Set());
 
   if (isLoading) {
     return (
@@ -38,15 +28,12 @@ export function BrandsCarousel() {
     );
   }
 
-  // Filter brands that have a logo_url
-  const brandsWithLogos = brands?.filter(brand => brand.logo_url) || [];
-
-  if (brandsWithLogos.length === 0) {
+  if (!brands || brands.length === 0) {
     return null;
   }
 
   // Duplicate brands for infinite scroll effect
-  const duplicatedBrands = [...brandsWithLogos, ...brandsWithLogos];
+  const duplicatedBrands = [...brands, ...brands];
 
   return (
     <section className="py-12 md:py-16 bg-secondary/30 overflow-hidden">
@@ -74,12 +61,25 @@ export function BrandsCarousel() {
                   key={`${brand.id}-${index}`}
                   className="flex-shrink-0 w-32 md:w-40 h-20 md:h-24 p-4 flex items-center justify-center bg-background hover:shadow-lg transition-shadow duration-300 border"
                 >
-                  <img
-                    src={brand.logo_url!}
-                    alt={brand.name}
-                    className="max-w-full max-h-full object-contain grayscale hover:grayscale-0 transition-all duration-300"
-                    loading="lazy"
-                  />
+                  {!failedImages.has(brand.id) && brand.logo_url ? (
+                    <img
+                      src={brand.logo_url}
+                      alt={brand.name}
+                      className="max-w-full max-h-full object-contain grayscale hover:grayscale-0 transition-all duration-300"
+                      loading="lazy"
+                      onError={() => {
+                        setFailedImages(prev => {
+                          const newSet = new Set(prev);
+                          newSet.add(brand.id);
+                          return newSet;
+                        });
+                      }}
+                    />
+                  ) : (
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {brand.name}
+                    </span>
+                  )}
                 </Card>
               ))}
             </div>
