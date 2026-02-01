@@ -6,18 +6,19 @@ import { BrandsCarousel } from '@/components/home/BrandsCarousel';
 // Mock Supabase client
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    rpc: vi.fn((functionName: string, params?: any) => {
-      if (functionName === 'get_brands_with_product_counts') {
-        return Promise.resolve({
-          data: [
-            { id: '1', name: 'Ray-Ban', logo_url: 'https://example.com/logo1.png', display_order: 1, is_active: true, product_count: 5 },
-            { id: '2', name: 'Oakley', logo_url: 'https://example.com/logo2.png', display_order: 2, is_active: true, product_count: 3 },
-          ],
-          error: null,
-        });
-      }
-      return Promise.resolve({ data: [], error: null });
-    }),
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          order: vi.fn(() => Promise.resolve({
+            data: [
+              { id: '1', name: 'Ray-Ban', logo_url: 'https://example.com/logo1.png', display_order: 1 },
+              { id: '2', name: 'Oakley', logo_url: 'https://example.com/logo2.png', display_order: 2 },
+            ],
+            error: null,
+          })),
+        })),
+      })),
+    })),
   },
 }));
 

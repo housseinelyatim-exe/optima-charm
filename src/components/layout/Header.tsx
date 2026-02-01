@@ -10,8 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCart } from "@/hooks/useCart";
-import { useCategories } from "@/hooks/useProducts";
-import { useBrandsWithProducts } from "@/hooks/useBrandsWithProducts";
+import { useCategories, useBrands } from "@/hooks/useProducts";
 import { useSettings } from "@/hooks/useSettings";
 import optimaLogo from "@/assets/optima-logo.png";
 
@@ -20,7 +19,7 @@ export function Header() {
   const location = useLocation();
   const { items } = useCart();
   const { data: categories } = useCategories();
-  const { data: brands } = useBrandsWithProducts();
+  const { data: brands } = useBrands();
   const { data: settings } = useSettings();
 
   const phone = settings?.shop_phone || "+216 XX XXX XXX";

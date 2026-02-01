@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Loader2, Search, AlertCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Search } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -28,18 +27,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { searchBrandLogo } from "@/utils/brandfetch";
 
-interface BrandWithCount {
-  id: string;
-  name: string;
-  slug: string;
-  logo_url: string | null;
-  description: string | null;
-  display_order: number | null;
-  domain?: string;
-  is_active?: boolean;
-  product_count?: number;
-}
-
 // Helper to generate slug from name
 const generateSlug = (name: string): string => {
   return name
@@ -54,7 +41,7 @@ const AdminBrands = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingBrand, setEditingBrand] = useState<BrandWithCount | null>(null);
+  const [editingBrand, setEditingBrand] = useState<{ id: string; name: string; slug: string; logo_url: string | null; description: string | null; display_order: number | null } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
@@ -65,17 +52,17 @@ const AdminBrands = () => {
     display_order: 0,
   });
 
-  // Fetch brands with product counts using RPC function
+  // Fetch brands
   const { data: brands, isLoading } = useQuery({
     queryKey: ["admin-brands"],
     queryFn: async () => {
-      // Use RPC function for efficient query (includes all brands, not just active)
       const { data, error } = await supabase
-        .rpc('get_brands_with_product_counts', { only_active: false });
+        .from("brands")
+        .select("*")
+        .order("display_order", { ascending: true });
 
       if (error) throw error;
-
-      return data as BrandWithCount[];
+      return data;
     },
   });
 
@@ -386,7 +373,6 @@ const AdminBrands = () => {
                     <TableHead>Logo</TableHead>
                     <TableHead>Nom</TableHead>
                     <TableHead>Slug</TableHead>
-                    <TableHead>Produits</TableHead>
                     <TableHead>Ordre</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -411,18 +397,6 @@ const AdminBrands = () => {
                       <TableCell className="font-medium">{brand.name}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {brand.slug}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className={brand.product_count === 0 ? "text-orange-600 font-medium" : ""}>
-                            {brand.product_count || 0}
-                          </span>
-                          {brand.product_count === 0 && (
-                            <Badge variant="outline" className="text-xs text-orange-600 border-orange-600">
-                              Aucun produit
-                            </Badge>
-                          )}
-                        </div>
                       </TableCell>
                       <TableCell>{brand.display_order}</TableCell>
                       <TableCell className="text-right">
@@ -454,17 +428,6 @@ const AdminBrands = () => {
             )}
           </CardContent>
         </Card>
-
-        {/* Alert for brands with 0 products */}
-        {brands && brands.filter(b => b.product_count === 0).length > 0 && (
-          <Alert className="border-orange-200 bg-orange-50">
-            <AlertCircle className="h-4 w-4 text-orange-600" />
-            <AlertDescription>
-              <strong>Note :</strong> Les marques avec 0 produits ne s'affichent pas dans le carrousel ni dans la navigation du site.
-              Ajoutez des produits à ces marques pour les rendre visibles aux clients.
-            </AlertDescription>
-          </Alert>
-        )}
 
         {/* Info card about Brandfetch */}
         <Alert>
