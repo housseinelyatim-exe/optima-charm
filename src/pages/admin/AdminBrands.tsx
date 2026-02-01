@@ -207,7 +207,7 @@ const AdminBrands = () => {
                     id="display_order"
                     type="number"
                     value={formData.display_order}
-                    onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
                     min="0"
                   />
                 </div>

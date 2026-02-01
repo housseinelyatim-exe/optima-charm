@@ -90,7 +90,10 @@ export function BrandsCarousel() {
                       target.style.display = 'none';
                       const parent = target.parentElement;
                       if (parent) {
-                        parent.innerHTML = `<span class="text-sm font-medium text-muted-foreground">${brand.name}</span>`;
+                        const fallbackText = document.createElement('span');
+                        fallbackText.className = 'text-sm font-medium text-muted-foreground';
+                        fallbackText.textContent = brand.name;
+                        parent.appendChild(fallbackText);
                       }
                     }}
                   />
