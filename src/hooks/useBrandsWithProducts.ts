@@ -38,7 +38,8 @@ export function useBrandsWithProducts() {
       if (error) throw error;
 
       // Filter out brands with 0 products and map to Brand type
-      return (data as BrandFromRPC[] || [])
+      const brandsData = (data || []) as BrandFromRPC[];
+      return brandsData
         .filter(brand => (brand.product_count ?? 0) > 0)
         .map(brand => ({
           id: brand.id,
