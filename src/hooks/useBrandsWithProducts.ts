@@ -24,7 +24,7 @@ export function useBrandsWithProducts() {
       if (error) throw error;
 
       // Filter out brands with 0 products
-      return (data || []).filter(brand => brand.product_count > 0) as Brand[];
+      return (data || []).filter(brand => (brand.product_count ?? 0) > 0) as Brand[];
     },
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
