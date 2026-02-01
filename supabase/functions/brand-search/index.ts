@@ -14,7 +14,6 @@ interface BrandfetchResponse {
   name: string;
   domain: string;
   logos: BrandfetchLogo[];
-  icon?: string;
 }
 
 const corsHeaders = {
@@ -23,24 +22,21 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Get Brandfetch API key from environment
     const BRANDFETCH_API_KEY = Deno.env.get('BRANDFETCH_API_KEY');
     
     if (!BRANDFETCH_API_KEY) {
-      console.warn('BRANDFETCH_API_KEY not set');
+      console.error('BRANDFETCH_API_KEY not set');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get query parameter
     const url = new URL(req.url);
     const query = url.searchParams.get('query');
 
@@ -53,7 +49,6 @@ serve(async (req) => {
 
     console.log(`Searching for brand: ${query}`);
 
-    // Clean and prepare query
     const cleanQuery = query.toLowerCase().trim().replace(/\s+/g, '-');
 
     const apiHeaders = {
@@ -68,7 +63,7 @@ serve(async (req) => {
 
     // If direct fetch fails, try search API
     if (!response.ok) {
-      console.log(`Direct fetch failed, trying search API for: ${query}`);
+      console.log(`Direct fetch failed, trying search API`);
       
       const searchResponse = await fetch(
         `https://api.brandfetch.io/v2/search/${encodeURIComponent(query)}`,
@@ -76,10 +71,8 @@ serve(async (req) => {
       );
 
       if (!searchResponse.ok) {
-        const errorText = await searchResponse.text();
-        console.error('Brandfetch search error:', errorText);
         return new Response(
-          JSON.stringify({ error: 'Brand not found', details: `Status: ${searchResponse.status}` }),
+          JSON.stringify({ error: 'Brand not found' }),
           { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -94,16 +87,13 @@ serve(async (req) => {
       }
 
       const firstResult = searchData[0];
-      const domain = firstResult.domain;
+      console.log(`Found brand: ${firstResult.name} (${firstResult.domain})`);
 
-      console.log(`Found brand via search: ${firstResult.name} (${domain})`);
-
-      response = await fetch(`https://api.brandfetch.io/v2/brands/${domain}`, {
+      response = await fetch(`https://api.brandfetch.io/v2/brands/${firstResult.domain}`, {
         headers: apiHeaders,
       });
 
       if (!response.ok) {
-        console.error('Failed to fetch brand details');
         return new Response(
           JSON.stringify({ error: 'Failed to fetch brand details' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -113,77 +103,66 @@ serve(async (req) => {
 
     const brandData: BrandfetchResponse = await response.json();
     
-    console.log(`Brand data received. Logos count: ${brandData.logos?.length || 0}`);
-    
-    // Log all available logos for debugging
+    // Log available logos
     if (brandData.logos) {
       brandData.logos.forEach((logo, i) => {
         console.log(`Logo ${i}: type=${logo.type}, theme=${logo.theme}`);
       });
     }
 
-    const result = extractLogo(brandData);
+    const result = extractDarkLogo(brandData);
 
     if (!result) {
       return new Response(
-        JSON.stringify({ error: 'No logo found for this brand' }),
+        JSON.stringify({ error: 'No logo found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Returning logo: ${result.logoUrl}`);
+    console.log(`Returning: ${result.logoUrl}`);
 
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { 
-        ...corsHeaders, 
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=86400',
-      },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Edge function error:', error);
+    console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
 
-function extractLogo(data: BrandfetchResponse): { name: string; domain: string; logoUrl: string } | null {
+function extractDarkLogo(data: BrandfetchResponse): { name: string; domain: string; logoUrl: string } | null {
   if (!data.logos || data.logos.length === 0) {
     return null;
   }
 
-  // PRIORITY: Dark theme logos first (best for light/white backgrounds)
-  // 1. Dark theme logo 
-  // 2. Dark theme icon (fallback)
-  // 3. Light theme logo (last resort)
-  // 4. Any logo
+  // STRICT PRIORITY: Dark theme ONLY for best visibility on light backgrounds
+  // 1. Dark theme logo (text logo)
+  // 2. Dark theme icon (symbol)
+  // 3. Light theme logo (fallback only)
   const darkLogo = data.logos.find(logo => logo.theme === 'dark' && logo.type === 'logo');
   const darkIcon = data.logos.find(logo => logo.theme === 'dark' && logo.type === 'icon');
   const lightLogo = data.logos.find(logo => logo.theme === 'light' && logo.type === 'logo');
-  const anyLogo = data.logos.find(logo => logo.type === 'logo');
-  const anyItem = data.logos[0];
+  const anyLogo = data.logos[0];
   
-  const selectedLogo = darkLogo || darkIcon || lightLogo || anyLogo || anyItem;
+  const selectedLogo = darkLogo || darkIcon || lightLogo || anyLogo;
 
-  console.log(`Selected: type=${selectedLogo?.type}, theme=${selectedLogo?.theme}`);
+  console.log(`Selected logo: type=${selectedLogo?.type}, theme=${selectedLogo?.theme}`);
 
-  if (!selectedLogo || !selectedLogo.formats || selectedLogo.formats.length === 0) {
+  if (!selectedLogo?.formats?.length) {
     return null;
   }
 
-  // Get the best format (prefer SVG, then high-res PNG)
+  // Prefer SVG > PNG
   const formats = selectedLogo.formats;
   const svgFormat = formats.find(f => f.format === 'svg');
-  const pngFormats = formats.filter(f => f.format === 'png').sort((a, b) => (b.size || 0) - (a.size || 0));
-  const bestPng = pngFormats[0];
-  const anyFormat = formats[0];
+  const pngFormat = formats.find(f => f.format === 'png');
+  const bestFormat = svgFormat || pngFormat || formats[0];
 
-  const bestFormat = svgFormat || bestPng || anyFormat;
-
-  if (!bestFormat || !bestFormat.src) {
+  if (!bestFormat?.src) {
     return null;
   }
 
