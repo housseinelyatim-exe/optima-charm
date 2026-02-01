@@ -1,8 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { useBrandsWithProducts } from "@/hooks/useBrandsWithProducts";
+import { useState } from "react";
 
 export function BrandsCarousel() {
   const { data: brands, isLoading } = useBrandsWithProducts();
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   if (isLoading) {
     return (
@@ -59,23 +61,21 @@ export function BrandsCarousel() {
                   key={`${brand.id}-${index}`}
                   className="flex-shrink-0 w-32 md:w-40 h-20 md:h-24 p-4 flex items-center justify-center bg-background hover:shadow-lg transition-shadow duration-300 border"
                 >
-                  <img
-                    src={brand.logo_url!}
-                    alt={brand.name}
-                    className="max-w-full max-h-full object-contain grayscale hover:grayscale-0 transition-all duration-300"
-                    loading="lazy"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent) {
-                        const span = document.createElement('span');
-                        span.className = 'text-sm font-medium text-muted-foreground';
-                        span.textContent = brand.name;
-                        parent.appendChild(span);
-                      }
-                    }}
-                  />
+                  {!failedImages.has(brand.id) && brand.logo_url ? (
+                    <img
+                      src={brand.logo_url}
+                      alt={brand.name}
+                      className="max-w-full max-h-full object-contain grayscale hover:grayscale-0 transition-all duration-300"
+                      loading="lazy"
+                      onError={() => {
+                        setFailedImages(prev => new Set(prev).add(brand.id));
+                      }}
+                    />
+                  ) : (
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {brand.name}
+                    </span>
+                  )}
                 </Card>
               ))}
             </div>

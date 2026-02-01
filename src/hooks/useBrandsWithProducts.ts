@@ -17,33 +17,14 @@ export function useBrandsWithProducts() {
   return useQuery({
     queryKey: ["brands-with-products"],
     queryFn: async () => {
-      // Get all active brands
-      const { data: brandsData, error: brandsError } = await supabase
-        .from("brands")
-        .select("*")
-        .eq("is_active", true)
-        .order("display_order", { ascending: true });
+      // Use RPC function for efficient query
+      const { data, error } = await supabase
+        .rpc('get_brands_with_product_counts', { only_active: true });
 
-      if (brandsError) throw brandsError;
-
-      // For each brand, count active products
-      const brandsWithCounts = await Promise.all(
-        (brandsData || []).map(async (brand) => {
-          const { count } = await supabase
-            .from("products")
-            .select("*", { count: "exact", head: true })
-            .eq("brand_id", brand.id)
-            .eq("is_published", true);
-
-          return {
-            ...brand,
-            product_count: count || 0,
-          };
-        })
-      );
+      if (error) throw error;
 
       // Filter out brands with 0 products
-      return brandsWithCounts.filter(brand => brand.product_count > 0) as Brand[];
+      return (data || []).filter(brand => brand.product_count > 0) as Brand[];
     },
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });

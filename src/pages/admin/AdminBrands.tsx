@@ -65,34 +65,17 @@ const AdminBrands = () => {
     display_order: 0,
   });
 
-  // Fetch brands with product counts
+  // Fetch brands with product counts using RPC function
   const { data: brands, isLoading } = useQuery({
     queryKey: ["admin-brands"],
     queryFn: async () => {
+      // Use RPC function for efficient query (includes all brands, not just active)
       const { data, error } = await supabase
-        .from("brands")
-        .select("*")
-        .order("display_order", { ascending: true });
+        .rpc('get_brands_with_product_counts', { only_active: false });
 
       if (error) throw error;
 
-      // Get product count for each brand
-      const brandsWithCounts = await Promise.all(
-        (data || []).map(async (brand) => {
-          const { count } = await supabase
-            .from("products")
-            .select("*", { count: "exact", head: true })
-            .eq("brand_id", brand.id)
-            .eq("is_published", true);
-
-          return {
-            ...brand,
-            product_count: count || 0,
-          };
-        })
-      );
-
-      return brandsWithCounts as BrandWithCount[];
+      return data as BrandWithCount[];
     },
   });
 
@@ -477,7 +460,7 @@ const AdminBrands = () => {
           <Alert className="border-orange-200 bg-orange-50">
             <AlertCircle className="h-4 w-4 text-orange-600" />
             <AlertDescription>
-              <strong>Note:</strong> Les marques avec 0 produit ne s'affichent pas dans le carrousel ni dans la navigation du site.
+              <strong>Note:</strong> Les marques avec 0 produits ne s'affichent pas dans le carrousel ni dans la navigation du site.
               Ajoutez des produits à ces marques pour les rendre visibles aux clients.
             </AlertDescription>
           </Alert>
