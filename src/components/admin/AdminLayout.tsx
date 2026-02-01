@@ -12,6 +12,7 @@ import {
   Images,
   Tag,
   User,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -29,6 +30,7 @@ const navItems = [
   { name: "Commandes", href: "/admin/commandes", icon: ShoppingCart },
   { name: "Statistiques", href: "/admin/statistiques", icon: BarChart3 },
   { name: "Catégories", href: "/admin/categories", icon: Images },
+  { name: "Marques", href: "/admin/brands", icon: Award },
   { name: "Codes Promo", href: "/admin/coupons", icon: Tag },
   { name: "Paramètres", href: "/admin/parametres", icon: Settings },
   { name: "Mon compte", href: "/admin/account", icon: User },

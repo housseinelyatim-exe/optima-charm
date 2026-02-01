@@ -152,3 +152,21 @@
     transform: translateY(0);
   }
 }
+
+/* Brands carousel infinite scroll animation */
+@keyframes scroll-brands {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-brands {
+  animation: scroll-brands 30s linear infinite;
+}
+
+.animate-scroll-brands:hover {
+  animation-play-state: paused;
+}
