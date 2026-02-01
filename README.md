@@ -104,6 +104,22 @@ supabase link --project-ref YOUR_PROJECT_REF
 supabase functions deploy fetch-brand-logo
 ```
 
+### Environment Variables
+
+The edge function uses the following secret:
+
+- `BRANDFETCH_API_KEY` - Your Brandfetch API key for authenticated requests
+
+**Setup:**
+```bash
+supabase secrets set BRANDFETCH_API_KEY=your_api_key_here
+```
+
+**Why it's needed:**
+- Free public API has rate limits (1000 requests/month)
+- Authenticated API provides higher limits and better reliability
+- Optional but recommended for production use
+
 ### Edge Function: fetch-brand-logo
 
 **Purpose:** Proxy for Brandfetch API to avoid CORS issues

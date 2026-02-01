@@ -29,6 +29,13 @@ serve(async (req) => {
   }
 
   try {
+    // Get Brandfetch API key from environment
+    const BRANDFETCH_API_KEY = Deno.env.get('BRANDFETCH_API_KEY');
+    
+    if (!BRANDFETCH_API_KEY) {
+      console.warn('BRANDFETCH_API_KEY not set, using public API (lower rate limits)');
+    }
+
     // Get query parameter
     const url = new URL(req.url);
     const query = url.searchParams.get('query');
@@ -46,11 +53,18 @@ serve(async (req) => {
     // Clean and prepare query
     const cleanQuery = query.toLowerCase().trim().replace(/\s+/g, '-');
 
+    // Prepare headers with API key if available
+    const apiHeaders: Record<string, string> = {
+      'Accept': 'application/json',
+    };
+    
+    if (BRANDFETCH_API_KEY) {
+      apiHeaders['Authorization'] = `Bearer ${BRANDFETCH_API_KEY}`;
+    }
+
     // Try direct domain fetch first
     let response = await fetch(`https://api.brandfetch.io/v2/brands/${cleanQuery}.com`, {
-      headers: {
-        'Accept': 'application/json',
-      },
+      headers: apiHeaders,
     });
 
     // If direct fetch fails, try search API
@@ -58,15 +72,19 @@ serve(async (req) => {
       const searchResponse = await fetch(
         `https://api.brandfetch.io/v2/search/${encodeURIComponent(query)}`,
         {
-          headers: {
-            'Accept': 'application/json',
-          },
+          headers: apiHeaders,
         }
       );
 
       if (!searchResponse.ok) {
+        const errorText = await searchResponse.text();
+        console.error('Brandfetch search error:', errorText);
+        
         return new Response(
-          JSON.stringify({ error: 'Brand not found' }),
+          JSON.stringify({ 
+            error: 'Brand not found', 
+            details: `Status: ${searchResponse.status}` 
+          }),
           {
             status: 404,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -78,7 +96,7 @@ serve(async (req) => {
       
       if (!searchData || searchData.length === 0) {
         return new Response(
-          JSON.stringify({ error: 'Brand not found' }),
+          JSON.stringify({ error: 'Brand not found in search results' }),
           {
             status: 404,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -90,15 +108,21 @@ serve(async (req) => {
       const firstResult = searchData[0];
       const domain = firstResult.domain;
 
+      console.log(`Found brand via search: ${firstResult.name} (${domain})`);
+
       response = await fetch(`https://api.brandfetch.io/v2/brands/${domain}`, {
-        headers: {
-          'Accept': 'application/json',
-        },
+        headers: apiHeaders,
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Brandfetch brand fetch error:', errorText);
+        
         return new Response(
-          JSON.stringify({ error: 'Failed to fetch brand details' }),
+          JSON.stringify({ 
+            error: 'Failed to fetch brand details',
+            details: `Status: ${response.status}`
+          }),
           {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -120,14 +144,23 @@ serve(async (req) => {
       );
     }
 
+    console.log(`Successfully fetched logo for: ${result.name} (${result.domain})`);
+
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
+      },
     });
   } catch (error) {
     console.error('Edge function error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ 
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -146,6 +179,10 @@ function extractLogo(data: BrandfetchResponse): { name: string; domain: string; 
   const anyLogo = data.logos[0];
   const selectedLogo = lightLogo || anyLogo;
 
+  if (!selectedLogo || !selectedLogo.formats || selectedLogo.formats.length === 0) {
+    return null;
+  }
+
   // Get the best format (prefer SVG, then PNG)
   const formats = selectedLogo.formats;
   const svgFormat = formats.find(f => f.format === 'svg');
@@ -154,7 +191,7 @@ function extractLogo(data: BrandfetchResponse): { name: string; domain: string; 
 
   const bestFormat = svgFormat || pngFormat || anyFormat;
 
-  if (!bestFormat) {
+  if (!bestFormat || !bestFormat.src) {
     return null;
   }
 

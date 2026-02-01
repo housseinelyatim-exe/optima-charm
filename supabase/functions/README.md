@@ -46,9 +46,81 @@ This edge function acts as a server-side proxy for the Brandfetch API to avoid C
    curl "https://YOUR_PROJECT_REF.supabase.co/functions/v1/fetch-brand-logo?query=ray-ban"
    ```
 
+## Setting Up Brandfetch API Key
+
+To use your Brandfetch API key for better rate limits and reliability:
+
+### Method 1: Via Supabase Dashboard (Recommended)
+
+1. Go to your Supabase Dashboard
+2. Navigate to **Edge Functions** → **Manage secrets**
+3. Click **Add new secret**
+4. Name: `BRANDFETCH_API_KEY`
+5. Value: `FabuqEicjs39ZXqRpK32ZhUPUsuflZeRT57DvH8kp9rqNmHawEEy0b7n6VG_FeKNOrj7Gp2-6x-CQnivTsjGgg`
+6. Click **Save**
+
+### Method 2: Via Supabase CLI
+
+```bash
+# Set the secret
+supabase secrets set BRANDFETCH_API_KEY=FabuqEicjs39ZXqRpK32ZhUPUsuflZeRT57DvH8kp9rqNmHawEEy0b7n6VG_FeKNOrj7Gp2-6x-CQnivTsjGgg
+
+# Verify it's set
+supabase secrets list
+```
+
+### Method 3: Local Development
+
+For local testing, create a `.env` file in `supabase/functions/fetch-brand-logo/`:
+
+```
+BRANDFETCH_API_KEY=FabuqEicjs39ZXqRpK32ZhUPUsuflZeRT57DvH8kp9rqNmHawEEy0b7n6VG_FeKNOrj7Gp2-6x-CQnivTsjGgg
+```
+
+**Note**: Add `.env` to `.gitignore` to avoid committing secrets!
+
+### Verify API Key is Working
+
+After setting the secret and redeploying:
+
+1. Check edge function logs in Supabase Dashboard
+2. You should NOT see: "BRANDFETCH_API_KEY not set" warning
+3. Test a brand search in your admin dashboard
+4. Logs should show: "Successfully fetched logo for: [brand name]"
+
+### Benefits of Using API Key
+
+- ✅ **Higher rate limits**: More requests per month
+- ✅ **Better reliability**: Priority API access
+- ✅ **More data**: Access to additional brand information
+- ✅ **Faster responses**: Premium tier caching
+
+### Troubleshooting
+
+**API key not working?**
+- Redeploy function after setting secret: `supabase functions deploy fetch-brand-logo`
+- Check logs for authentication errors
+- Verify key is correct in Supabase secrets
+
+**Still seeing public API warning?**
+- Function needs to be redeployed after secret is added
+- Check that secret name is exactly: `BRANDFETCH_API_KEY`
+
 ### Environment Variables
 
-No environment variables needed! The function uses Brandfetch's public API.
+The edge function uses the following secret:
+
+- `BRANDFETCH_API_KEY` - Your Brandfetch API key for authenticated requests
+
+**Setup:**
+```bash
+supabase secrets set BRANDFETCH_API_KEY=your_api_key_here
+```
+
+**Why it's needed:**
+- Free public API has rate limits (1000 requests/month)
+- Authenticated API provides higher limits and better reliability
+- Optional but recommended for production use
 
 ### Testing Locally
 
