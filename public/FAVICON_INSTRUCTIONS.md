@@ -1,5 +1,7 @@
 # Favicon Setup Instructions
 
+⚠️ **IMPORTANT**: The website structure is ready, but the actual favicon image files are NOT yet generated. The site will reference these files, but they won't display correctly until you add them.
+
 ## Required Favicon Files
 
 The following favicon files need to be added to the `public` folder:
@@ -30,10 +32,16 @@ The following favicon files need to be added to the `public` folder:
 
 ## After Adding Favicons
 
-1. Deploy the updated code to Vercel
-2. Clear browser cache
-3. Request re-indexing in Google Search Console (optional)
-4. Wait 1-3 days for Google to update the favicon in search results
+1. Verify all favicon files are in the `public/` folder
+2. Deploy the updated code to Vercel
+3. Test the favicon appears correctly in browsers
+4. Clear browser cache if needed
+5. Request re-indexing in Google Search Console (optional)
+6. Wait 1-3 days for Google to update the favicon in search results
+
+## Note on PWA Manifest
+
+The `site.webmanifest` file references the `android-chrome-192x192.png` and `android-chrome-512x512.png` files. The PWA functionality will only work properly after these files are generated and added to the `public/` folder.
 
 ## Current Logo Location
 
