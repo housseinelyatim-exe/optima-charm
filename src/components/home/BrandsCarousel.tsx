@@ -2,13 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 
-interface Brand {
-  id: string;
-  name: string;
-  logo_url: string;
-  display_order: number;
-}
-
 export function BrandsCarousel() {
   const { data: brands, isLoading } = useQuery({
     queryKey: ["brands"],
@@ -16,11 +9,10 @@ export function BrandsCarousel() {
       const { data, error } = await supabase
         .from("brands")
         .select("*")
-        .eq("is_active", true)
         .order("display_order", { ascending: true });
 
       if (error) throw error;
-      return data as Brand[];
+      return data;
     },
   });
 

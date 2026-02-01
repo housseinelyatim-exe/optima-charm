@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Loader2, Eye, EyeOff, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Search } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
@@ -28,28 +27,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { searchBrandLogo } from "@/utils/brandfetch";
 
-interface Brand {
-  id: string;
-  name: string;
-  domain?: string;
-  logo_url: string;
-  display_order: number;
-  is_active: boolean;
-}
+// Helper to generate slug from name
+const generateSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
 
 const AdminBrands = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
+  const [editingBrand, setEditingBrand] = useState<{ id: string; name: string; slug: string; logo_url: string | null; description: string | null; display_order: number | null } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     name: "",
-    domain: "",
+    slug: "",
     logo_url: "",
+    description: "",
     display_order: 0,
-    is_active: true,
   });
 
   // Fetch brands
@@ -62,7 +62,7 @@ const AdminBrands = () => {
         .order("display_order", { ascending: true });
 
       if (error) throw error;
-      return data as Brand[];
+      return data;
     },
   });
 
@@ -85,7 +85,7 @@ const AdminBrands = () => {
         setFormData({
           ...formData,
           name: result.name,
-          domain: result.domain,
+          slug: generateSlug(result.name),
           logo_url: result.logoUrl,
         });
         toast({
@@ -114,14 +114,22 @@ const AdminBrands = () => {
   // Create/Update mutation
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData & { id?: string }) => {
+      const brandData = {
+        name: data.name,
+        slug: data.slug || generateSlug(data.name),
+        logo_url: data.logo_url || null,
+        description: data.description || null,
+        display_order: data.display_order,
+      };
+
       if (data.id) {
         const { error } = await supabase
           .from("brands")
-          .update(data)
+          .update(brandData)
           .eq("id", data.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("brands").insert([data]);
+        const { error } = await supabase.from("brands").insert([brandData]);
         if (error) throw error;
       }
     },
@@ -157,35 +165,20 @@ const AdminBrands = () => {
     },
   });
 
-  // Toggle active mutation
-  const toggleActiveMutation = useMutation({
-    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
-      const { error } = await supabase
-        .from("brands")
-        .update({ is_active })
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-brands"] });
-      queryClient.invalidateQueries({ queryKey: ["brands"] });
-    },
-  });
-
   const resetForm = () => {
-    setFormData({ name: "", domain: "", logo_url: "", display_order: 0, is_active: true });
+    setFormData({ name: "", slug: "", logo_url: "", description: "", display_order: 0 });
     setSearchQuery("");
     setEditingBrand(null);
   };
 
-  const handleEdit = (brand: Brand) => {
+  const handleEdit = (brand: typeof brands[number]) => {
     setEditingBrand(brand);
     setFormData({
       name: brand.name,
-      domain: brand.domain || "",
-      logo_url: brand.logo_url,
-      display_order: brand.display_order,
-      is_active: brand.is_active,
+      slug: brand.slug,
+      logo_url: brand.logo_url || "",
+      description: brand.description || "",
+      display_order: brand.display_order || 0,
     });
     setSearchQuery(brand.name);
     setIsDialogOpen(true);
@@ -299,7 +292,11 @@ const AdminBrands = () => {
                     <Input
                       id="name"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        name: e.target.value,
+                        slug: generateSlug(e.target.value)
+                      })}
                       placeholder="Ray-Ban"
                       required
                     />
@@ -316,6 +313,16 @@ const AdminBrands = () => {
                   </div>
 
                   <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Input
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Description de la marque"
+                    />
+                  </div>
+
+                  <div>
                     <Label htmlFor="display_order">Ordre d'affichage</Label>
                     <Input
                       id="display_order"
@@ -324,15 +331,6 @@ const AdminBrands = () => {
                       onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
                       min="0"
                     />
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="is_active"
-                      checked={formData.is_active}
-                      onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                    />
-                    <Label htmlFor="is_active">Active</Label>
                   </div>
                 </div>
 
@@ -374,9 +372,8 @@ const AdminBrands = () => {
                   <TableRow>
                     <TableHead>Logo</TableHead>
                     <TableHead>Nom</TableHead>
-                    <TableHead>Domaine</TableHead>
+                    <TableHead>Slug</TableHead>
                     <TableHead>Ordre</TableHead>
-                    <TableHead>Statut</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -385,39 +382,23 @@ const AdminBrands = () => {
                     <TableRow key={brand.id}>
                       <TableCell>
                         <div className="w-20 h-12 flex items-center justify-center bg-muted rounded">
-                          <img
-                            src={brand.logo_url}
-                            alt={brand.name}
-                            className="max-w-full max-h-full object-contain"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
+                          {brand.logo_url && (
+                            <img
+                              src={brand.logo_url}
+                              alt={brand.name}
+                              className="max-w-full max-h-full object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{brand.name}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {brand.domain || '-'}
+                        {brand.slug}
                       </TableCell>
                       <TableCell>{brand.display_order}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            toggleActiveMutation.mutate({
-                              id: brand.id,
-                              is_active: !brand.is_active,
-                            })
-                          }
-                        >
-                          {brand.is_active ? (
-                            <Eye className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </Button>
-                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
