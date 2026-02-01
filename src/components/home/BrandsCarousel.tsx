@@ -38,12 +38,15 @@ export function BrandsCarousel() {
     );
   }
 
-  if (!brands || brands.length === 0) {
+  // Filter brands that have a logo_url
+  const brandsWithLogos = brands?.filter(brand => brand.logo_url) || [];
+
+  if (brandsWithLogos.length === 0) {
     return null;
   }
 
   // Duplicate brands for infinite scroll effect
-  const duplicatedBrands = [...brands, ...brands];
+  const duplicatedBrands = [...brandsWithLogos, ...brandsWithLogos];
 
   return (
     <section className="py-12 md:py-16 bg-secondary/30 overflow-hidden">
@@ -69,25 +72,13 @@ export function BrandsCarousel() {
               {duplicatedBrands.map((brand, index) => (
                 <Card
                   key={`${brand.id}-${index}`}
-                  className="flex-shrink-0 w-32 md:w-40 h-20 md:h-24 p-4 flex items-center justify-center bg-background hover:shadow-lg transition-shadow duration-300"
+                  className="flex-shrink-0 w-32 md:w-40 h-20 md:h-24 p-4 flex items-center justify-center bg-foreground hover:shadow-lg transition-shadow duration-300 border-0"
                 >
                   <img
-                    src={brand.logo_url}
+                    src={brand.logo_url!}
                     alt={brand.name}
-                    className="max-w-full max-h-full object-contain filter grayscale hover:grayscale-0 transition-all duration-300"
+                    className="max-w-full max-h-full object-contain brightness-0 invert opacity-80 hover:opacity-100 transition-all duration-300"
                     loading="lazy"
-                    onError={(e) => {
-                      // Fallback if image fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent) {
-                        const fallbackText = document.createElement('span');
-                        fallbackText.className = 'text-sm font-medium text-muted-foreground';
-                        fallbackText.textContent = brand.name;
-                        parent.appendChild(fallbackText);
-                      }
-                    }}
                   />
                 </Card>
               ))}
