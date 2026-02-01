@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export function BrandsCarousel() {
   const { data: brands, isLoading } = useBrandsWithProducts();
-  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [failedImages, setFailedImages] = useState<Set<string>>(() => new Set());
 
   if (isLoading) {
     return (
@@ -68,7 +68,11 @@ export function BrandsCarousel() {
                       className="max-w-full max-h-full object-contain grayscale hover:grayscale-0 transition-all duration-300"
                       loading="lazy"
                       onError={() => {
-                        setFailedImages(prev => new Set([...prev, brand.id]));
+                        setFailedImages(prev => {
+                          const newSet = new Set(prev);
+                          newSet.add(brand.id);
+                          return newSet;
+                        });
                       }}
                     />
                   ) : (
