@@ -460,7 +460,7 @@ const AdminBrands = () => {
           <Alert className="border-orange-200 bg-orange-50">
             <AlertCircle className="h-4 w-4 text-orange-600" />
             <AlertDescription>
-              <strong>Note:</strong> Les marques avec 0 produits ne s'affichent pas dans le carrousel ni dans la navigation du site.
+              <strong>Note :</strong> Les marques avec 0 produits ne s'affichent pas dans le carrousel ni dans la navigation du site.
               Ajoutez des produits à ces marques pour les rendre visibles aux clients.
             </AlertDescription>
           </Alert>

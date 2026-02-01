@@ -68,7 +68,7 @@ export function BrandsCarousel() {
                       className="max-w-full max-h-full object-contain grayscale hover:grayscale-0 transition-all duration-300"
                       loading="lazy"
                       onError={() => {
-                        setFailedImages(prev => new Set(prev).add(brand.id));
+                        setFailedImages(prev => new Set([...prev, brand.id]));
                       }}
                     />
                   ) : (
