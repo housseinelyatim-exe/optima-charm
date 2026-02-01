@@ -122,20 +122,13 @@ describe('searchBrandLogo', () => {
   });
 
   it('should return null when VITE_SUPABASE_URL is not set', async () => {
-    // Save current env
-    const originalEnv = import.meta.env.VITE_SUPABASE_URL;
-    
-    // Temporarily remove VITE_SUPABASE_URL
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (import.meta.env as any).VITE_SUPABASE_URL = undefined;
+    vi.stubEnv('VITE_SUPABASE_URL', '');
 
     const result = await searchBrandLogo('Test Brand');
 
     expect(result).toBeNull();
     
-    // Restore env
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (import.meta.env as any).VITE_SUPABASE_URL = originalEnv;
+    vi.unstubAllEnvs();
   });
 
   it('should call edge function with correct URL encoding', async () => {
