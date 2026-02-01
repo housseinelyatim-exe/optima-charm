@@ -62,3 +62,22 @@ This project is built with:
 ## How can I deploy this project?
 
 The project is deployed on Vercel. Any changes pushed to the main branch will automatically trigger a deployment.
+
+## Brandfetch Integration
+
+This project uses Brandfetch API to automatically fetch brand logos. 
+
+### How it works:
+1. Admin enters brand name (e.g., "Ray-Ban")
+2. System searches Brandfetch database
+3. Official logo is automatically retrieved
+4. No manual logo hunting required!
+
+### Features:
+- ✅ Auto-fetch official brand logos
+- ✅ No API key required for basic usage
+- ✅ Fallback to manual URL entry
+- ✅ Always up-to-date logos
+
+### Note:
+Brandfetch API has a free tier with generous limits. For production use with high traffic, consider their paid plans.

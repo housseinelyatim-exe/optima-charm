@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS public.brands (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL UNIQUE,
+    domain TEXT, -- Add domain field for Brandfetch
     logo_url TEXT NOT NULL,
     display_order INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT true,
@@ -30,20 +31,20 @@ USING (
     )
 );
 
--- Insert default popular eyewear brands
-INSERT INTO public.brands (name, logo_url, display_order) VALUES
-('Ray-Ban', 'https://logos-world.net/wp-content/uploads/2020/12/Ray-Ban-Logo.png', 1),
-('Oakley', 'https://logos-world.net/wp-content/uploads/2020/12/Oakley-Logo.png', 2),
-('Prada', 'https://logos-world.net/wp-content/uploads/2020/04/Prada-Logo.png', 3),
-('Gucci', 'https://logos-world.net/wp-content/uploads/2020/04/Gucci-Logo.png', 4),
-('Dolce & Gabbana', 'https://logos-world.net/wp-content/uploads/2020/09/Dolce-Gabbana-Logo.png', 5),
-('Versace', 'https://logos-world.net/wp-content/uploads/2020/09/Versace-Logo.png', 6),
-('Armani', 'https://logos-world.net/wp-content/uploads/2020/09/Armani-Logo.png', 7),
-('Tom Ford', 'https://logos-world.net/wp-content/uploads/2021/02/Tom-Ford-Logo.png', 8),
-('Burberry', 'https://logos-world.net/wp-content/uploads/2020/09/Burberry-Logo.png', 9),
-('Chanel', 'https://logos-world.net/wp-content/uploads/2020/05/Chanel-Logo.png', 10),
-('Dior', 'https://logos-world.net/wp-content/uploads/2020/09/Dior-Logo.png', 11),
-('Carrera', 'https://1000logos.net/wp-content/uploads/2020/09/Carrera-Logo.png', 12)
+-- Insert default popular eyewear brands with domains
+INSERT INTO public.brands (name, domain, logo_url, display_order) VALUES
+('Ray-Ban', 'ray-ban.com', 'https://asset.brandfetch.io/idFdo8ulhr/idzj34qGQm.jpeg', 1),
+('Oakley', 'oakley.com', 'https://asset.brandfetch.io/id20mQeCNq/idXDgGJCaj.jpeg', 2),
+('Prada', 'prada.com', 'https://asset.brandfetch.io/idZXyMQQfW/id8pJC7gKu.svg', 3),
+('Gucci', 'gucci.com', 'https://asset.brandfetch.io/id4ndmJn_d/idV4eHZcDW.svg', 4),
+('Dolce & Gabbana', 'dolcegabbana.com', 'https://asset.brandfetch.io/idCXe4qvWF/id6QZg_1tP.svg', 5),
+('Versace', 'versace.com', 'https://asset.brandfetch.io/id6UnhQ10E/idjFxHiB_X.svg', 6),
+('Armani', 'armani.com', 'https://asset.brandfetch.io/idr7qG07l4/idS3FV8yJI.svg', 7),
+('Tom Ford', 'tomford.com', 'https://asset.brandfetch.io/id3ULvwPyU/idg0X0q2Tb.svg', 8),
+('Burberry', 'burberry.com', 'https://asset.brandfetch.io/idNqKx7bxB/idpR1eeOvQ.svg', 9),
+('Chanel', 'chanel.com', 'https://asset.brandfetch.io/idAnDvEV7E/id0c73rJFx.svg', 10),
+('Dior', 'dior.com', 'https://asset.brandfetch.io/idDDfurQqN/idg4_EWO0O.svg', 11),
+('Carrera', 'carrera.com', 'https://asset.brandfetch.io/idw8xXNqvV/idxvJGJPq8.png', 12)
 ON CONFLICT (name) DO NOTHING;
 
 -- Create function to update updated_at timestamp
