@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { searchBrandLogo } from '@/utils/brandfetch';
 
 // Mock global fetch
-global.fetch = vi.fn();
+global.fetch = vi.fn() as Mock;
 
 describe('searchBrandLogo', () => {
   beforeEach(() => {
@@ -16,7 +16,7 @@ describe('searchBrandLogo', () => {
       logoUrl: 'https://example.com/logo.svg',
     };
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     });
@@ -31,13 +31,13 @@ describe('searchBrandLogo', () => {
     
     // Verify it calls the edge function (not Brandfetch API directly)
     expect(global.fetch).toHaveBeenCalledTimes(1);
-    const fetchCall = (global.fetch as any).mock.calls[0];
+    const fetchCall = (global.fetch as Mock).mock.calls[0] as unknown[];
     expect(fetchCall[0]).toContain('/functions/v1/fetch-brand-logo?query=Ray-Ban');
-    expect(fetchCall[1].method).toBe('GET');
+    expect((fetchCall[1] as Record<string, unknown>).method).toBe('GET');
   });
 
   it('should return null when brand is not found', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as Mock).mockResolvedValueOnce({
       ok: false,
       json: async () => ({ error: 'Brand not found' }),
     });
@@ -54,7 +54,7 @@ describe('searchBrandLogo', () => {
       logoUrl: 'https://example.com/logo.svg',
     };
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     });
@@ -71,7 +71,7 @@ describe('searchBrandLogo', () => {
       logoUrl: 'https://example.com/light-logo.svg',
     };
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     });
@@ -88,7 +88,7 @@ describe('searchBrandLogo', () => {
       logoUrl: 'https://example.com/logo.svg',
     };
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     });
@@ -103,7 +103,7 @@ describe('searchBrandLogo', () => {
   });
 
   it('should return null when no logo is found', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as Mock).mockResolvedValueOnce({
       ok: false,
       json: async () => ({ error: 'No logo found for this brand' }),
     });
@@ -114,7 +114,7 @@ describe('searchBrandLogo', () => {
   });
 
   it('should handle errors gracefully', async () => {
-    (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+    (global.fetch as Mock).mockRejectedValueOnce(new Error('Network error'));
 
     const result = await searchBrandLogo('Test Brand');
 
@@ -126,6 +126,7 @@ describe('searchBrandLogo', () => {
     const originalEnv = import.meta.env.VITE_SUPABASE_URL;
     
     // Temporarily remove VITE_SUPABASE_URL
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (import.meta.env as any).VITE_SUPABASE_URL = undefined;
 
     const result = await searchBrandLogo('Test Brand');
@@ -133,6 +134,7 @@ describe('searchBrandLogo', () => {
     expect(result).toBeNull();
     
     // Restore env
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (import.meta.env as any).VITE_SUPABASE_URL = originalEnv;
   });
 
@@ -143,7 +145,7 @@ describe('searchBrandLogo', () => {
       logoUrl: 'https://example.com/logo.svg',
     };
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     });
@@ -152,7 +154,7 @@ describe('searchBrandLogo', () => {
 
     // Verify the query is properly URL encoded
     expect(global.fetch).toHaveBeenCalledTimes(1);
-    const fetchCall = (global.fetch as any).mock.calls[0];
+    const fetchCall = (global.fetch as Mock).mock.calls[0] as unknown[];
     expect(fetchCall[0]).toContain('/functions/v1/fetch-brand-logo?query=JUST%20CAVALLI');
     expect(fetchCall[1]).toEqual({
       method: 'GET',
