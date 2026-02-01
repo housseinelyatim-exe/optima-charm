@@ -15,7 +15,7 @@ export async function searchBrandLogo(query: string): Promise<BrandLogoResult | 
     }
 
     // Call our Supabase Edge Function instead of Brandfetch API directly
-    const edgeFunctionUrl = `${supabaseUrl}/functions/v1/brand-search?query=${encodeURIComponent(query)}`;
+    const edgeFunctionUrl = `${supabaseUrl}/functions/v1/fetch-brand-logo?query=${encodeURIComponent(query)}`;
     
     const response = await fetch(edgeFunctionUrl, {
       method: 'GET',

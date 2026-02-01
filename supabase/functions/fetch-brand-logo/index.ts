@@ -174,26 +174,35 @@ function extractLogo(data: BrandfetchResponse): { name: string; domain: string; 
     return null;
   }
 
-  // Priority: light theme logo > any logo
-  const lightLogo = data.logos.find(logo => logo.theme === 'light');
-  const anyLogo = data.logos[0];
-  const selectedLogo = lightLogo || anyLogo;
+  // Priority order:
+  // 1. Light theme logo (works best on dark backgrounds)
+  // 2. Dark theme logo
+  // 3. Any logo
+  const lightLogo = data.logos.find(logo => logo.theme === 'light' && logo.type === 'logo');
+  const darkLogo = data.logos.find(logo => logo.theme === 'dark' && logo.type === 'logo');
+  const anyLogo = data.logos.find(logo => logo.type === 'logo');
+  const anyIcon = data.logos.find(logo => logo.type === 'icon');
+  
+  const selectedLogo = lightLogo || darkLogo || anyLogo || anyIcon;
 
   if (!selectedLogo || !selectedLogo.formats || selectedLogo.formats.length === 0) {
     return null;
   }
 
-  // Get the best format (prefer SVG, then PNG)
+  // Get the best format (prefer SVG for scalability, then high-res PNG)
   const formats = selectedLogo.formats;
   const svgFormat = formats.find(f => f.format === 'svg');
-  const pngFormat = formats.find(f => f.format === 'png');
+  const pngFormats = formats.filter(f => f.format === 'png').sort((a, b) => (b.size || 0) - (a.size || 0));
+  const bestPng = pngFormats[0];
   const anyFormat = formats[0];
 
-  const bestFormat = svgFormat || pngFormat || anyFormat;
+  const bestFormat = svgFormat || bestPng || anyFormat;
 
   if (!bestFormat || !bestFormat.src) {
     return null;
   }
+
+  console.log(`Selected logo: type=${selectedLogo.type}, theme=${selectedLogo.theme}, format=${bestFormat.format}`);
 
   return {
     name: data.name,
