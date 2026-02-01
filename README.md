@@ -81,3 +81,63 @@ This project uses Brandfetch API to automatically fetch brand logos.
 
 ### Note:
 Brandfetch API has a free tier with generous limits. For production use with high traffic, consider their paid plans.
+
+## Supabase Edge Functions
+
+This project uses Supabase Edge Functions for server-side operations.
+
+### Deploy Edge Functions
+
+To deploy the `fetch-brand-logo` edge function:
+
+```bash
+# Install Supabase CLI
+npm install -g supabase
+
+# Login to Supabase
+supabase login
+
+# Link to your project
+supabase link --project-ref YOUR_PROJECT_REF
+
+# Deploy the function
+supabase functions deploy fetch-brand-logo
+```
+
+### Edge Function: fetch-brand-logo
+
+**Purpose:** Proxy for Brandfetch API to avoid CORS issues
+
+**Endpoint:** `https://YOUR_PROJECT_REF.supabase.co/functions/v1/fetch-brand-logo`
+
+**Parameters:**
+- `query` (string): Brand name or domain to search
+
+**Example:**
+```bash
+curl "https://YOUR_PROJECT_REF.supabase.co/functions/v1/fetch-brand-logo?query=ray-ban"
+```
+
+**Response:**
+```json
+{
+  "name": "Ray-Ban",
+  "domain": "ray-ban.com",
+  "logoUrl": "https://asset.brandfetch.io/..."
+}
+```
+
+### Local Development
+
+To test edge functions locally:
+
+```bash
+# Start local Supabase
+supabase start
+
+# Serve functions locally
+supabase functions serve fetch-brand-logo
+
+# Test locally
+curl "http://localhost:54321/functions/v1/fetch-brand-logo?query=ray-ban"
+```
