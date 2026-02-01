@@ -174,16 +174,17 @@ function extractLogo(data: BrandfetchResponse): { name: string; domain: string; 
     return null;
   }
 
-  // Priority order:
-  // 1. Light theme logo (works best on dark backgrounds)
-  // 2. Dark theme logo
+  // Priority order for dark logos (best for light/white backgrounds):
+  // 1. Dark theme logo (ideal for light backgrounds)
+  // 2. Light theme logo (fallback)
   // 3. Any logo
-  const lightLogo = data.logos.find(logo => logo.theme === 'light' && logo.type === 'logo');
   const darkLogo = data.logos.find(logo => logo.theme === 'dark' && logo.type === 'logo');
+  const lightLogo = data.logos.find(logo => logo.theme === 'light' && logo.type === 'logo');
   const anyLogo = data.logos.find(logo => logo.type === 'logo');
+  const darkIcon = data.logos.find(logo => logo.theme === 'dark' && logo.type === 'icon');
   const anyIcon = data.logos.find(logo => logo.type === 'icon');
   
-  const selectedLogo = lightLogo || darkLogo || anyLogo || anyIcon;
+  const selectedLogo = darkLogo || lightLogo || anyLogo || darkIcon || anyIcon;
 
   if (!selectedLogo || !selectedLogo.formats || selectedLogo.formats.length === 0) {
     return null;
