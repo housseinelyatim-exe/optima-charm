@@ -279,7 +279,7 @@ const AdminBrands = () => {
                           (e.target as HTMLImageElement).style.display = 'none';
                           toast({
                             title: "Erreur de chargement",
-                            description: "Le logo ne peut pas être chargé",
+                            description: "Le logo ne peut pas être chargé. Vérifiez l'URL ou recherchez à nouveau la marque.",
                             variant: "destructive",
                           });
                         }}
@@ -306,7 +306,7 @@ const AdminBrands = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="logo_url">URL du logo (optionnel si recherché)</Label>
+                    <Label htmlFor="logo_url">URL du logo *</Label>
                     <Input
                       id="logo_url"
                       value={formData.logo_url}

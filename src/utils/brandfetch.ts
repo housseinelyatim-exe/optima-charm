@@ -18,10 +18,10 @@ interface BrandfetchResponse {
 export async function searchBrandLogo(query: string): Promise<{ name: string; domain: string; logoUrl: string } | null> {
   try {
     // First, try to get brand info by domain or name
-    const cleanQuery = query.toLowerCase().trim().replace(/\s+/g, '-');
+    const domainFormattedQuery = query.toLowerCase().trim().replace(/\s+/g, '-');
     
     // Try direct domain fetch first
-    const response = await fetch(`https://api.brandfetch.io/v2/brands/${cleanQuery}.com`, {
+    const response = await fetch(`https://api.brandfetch.io/v2/brands/${domainFormattedQuery}.com`, {
       headers: {
         'Accept': 'application/json',
       }
