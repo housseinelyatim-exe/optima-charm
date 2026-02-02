@@ -3,12 +3,19 @@ import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSettings } from "@/hooks/useSettings";
+import { SEO } from "@/components/seo/SEO";
 
 const Contact = () => {
   const { data: settings } = useSettings();
 
   return (
-    <Layout>
+    <>
+      <SEO 
+        title="Contactez-Nous"
+        description="Notre équipe est à votre disposition pour répondre à toutes vos questions. Visitez notre magasin au Krib ou contactez-nous par téléphone, email ou réseaux sociaux."
+        canonical="https://optima-optique.com/contact"
+      />
+      <Layout>
       <div className="container py-8 md:py-12">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -152,6 +159,7 @@ const Contact = () => {
         </div>
       </div>
     </Layout>
+    </>
   );
 };
 

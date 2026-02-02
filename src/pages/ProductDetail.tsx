@@ -8,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useProduct } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
+import { SEO } from "@/components/seo/SEO";
+import { StructuredData } from "@/components/seo/StructuredData";
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -73,7 +75,23 @@ const ProductDetail = () => {
   };
 
   return (
-    <Layout>
+    <>
+      <SEO 
+        title={`${product.name}${product.category?.name ? ` - ${product.category.name}` : ''}`}
+        description={product.description || `Achetez ${product.name} chez Optima Optique. ${product.price.toFixed(2)} TND. ${inStock ? 'En stock' : 'Rupture de stock'}.`}
+        canonical={`https://optima-optique.com/produits/${product.id}`}
+        ogImage={images[0]}
+      />
+      <StructuredData type="Product" data={{
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        image_url: images[0],
+        brand: product.category?.name || "Optima Optique",
+        price: product.price,
+        stock: product.stock
+      }} />
+      <Layout>
       <div className="container py-8 md:py-12">
         {/* Back button */}
         <Link
@@ -214,6 +232,7 @@ const ProductDetail = () => {
         </div>
       </div>
     </Layout>
+    </>
   );
 };
 
