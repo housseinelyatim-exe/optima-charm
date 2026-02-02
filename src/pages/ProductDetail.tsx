@@ -87,7 +87,7 @@ const ProductDetail = () => {
         <div className="grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Images */}
           <div className="space-y-4">
-            <div className="aspect-[4/3] max-h-[400px] overflow-hidden rounded-lg bg-secondary flex items-center justify-center p-6">
+            <div className="aspect-square max-h-[450px] overflow-hidden rounded-lg bg-secondary flex items-center justify-center p-6">
               <img
                 src={images[selectedImage]}
                 alt={product.name}
