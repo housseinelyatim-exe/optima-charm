@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useProducts, useCategories, useAllCategories } from "@/hooks/useProducts";
+import { SEO } from "@/components/seo/SEO";
 
 const Boutique = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -70,8 +71,19 @@ const Boutique = () => {
     setSearchParams(searchParams);
   };
 
+  const pageTitle = currentCategory ? currentCategory.name : "Notre Boutique";
+  const pageDescription = currentCategory 
+    ? currentCategory.description 
+    : "Découvrez notre collection complète de lunettes et accessoires";
+
   return (
-    <Layout>
+    <>
+      <SEO 
+        title={pageTitle}
+        description={pageDescription}
+        canonical={`https://optima-optique.com/produits${categorySlug ? `?category=${categorySlug}` : ''}`}
+      />
+      <Layout>
       <div className="container py-8 md:py-12">
         {/* Header */}
         <div className="mb-8">
@@ -168,6 +180,7 @@ const Boutique = () => {
         )}
       </div>
     </Layout>
+    </>
   );
 };
 

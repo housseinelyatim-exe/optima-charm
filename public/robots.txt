@@ -1,5 +1,26 @@
+# Robots.txt for Optima Optique
+# https://optima-optique.com
+
 User-agent: *
 Allow: /
-Disallow: /admin/
 
+# Sitemaps
 Sitemap: https://optima-optique.com/sitemap.xml
+
+# Disallow admin and checkout pages (not for public search)
+Disallow: /admin/
+Disallow: /admin
+Disallow: /login
+Disallow: /panier
+Disallow: /checkout
+Disallow: /commande
+Disallow: /mon-compte
+
+# Allow important pages
+Allow: /
+Allow: /produits
+Allow: /categories
+Allow: /contact
+
+# Crawl-delay (be nice to server)
+Crawl-delay: 1
