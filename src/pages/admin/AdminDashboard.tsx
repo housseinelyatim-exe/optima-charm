@@ -3,6 +3,7 @@ import { Package, ShoppingCart, DollarSign, TrendingUp } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { SEO } from "@/components/seo/SEO";
 
 const AdminDashboard = () => {
   const { data: stats } = useQuery({
@@ -75,7 +76,9 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <AdminLayout>
+    <>
+      <SEO title="Admin Dashboard" noindex={true} />
+      <AdminLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Tableau de bord</h1>
@@ -151,6 +154,7 @@ const AdminDashboard = () => {
         </Card>
       </div>
     </AdminLayout>
+    </>
   );
 };
 
